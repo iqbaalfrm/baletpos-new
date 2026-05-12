@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.baletpos.controller.EnhancedDashboardController">
+    <children>
+        <!-- Welcome and Summary Cards -->
+        <HBox spacing="8" VBox.vgrow="NEVER">
+            <children>
+                <!-- Penjualan Hari Ini Card -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Penjualan Hari Ini" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label fx:id="todaySalesTotalLabel" text="Rp 0" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1e293b;"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <children>
+                                <Label fx:id="todaySalesCountLabel" text="0 transaksi" style="-fx-text-fill: #64748b;"/>
+                                <Label fx:id="todaySalesTrendLabel" text="Naik 0%" style="-fx-text-fill: #1E40AF;"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+                <!-- Transaksi Hari Ini Card -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Transaksi Hari Ini" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label fx:id="todayTransactionCountLabel" text="0 transaksi" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1e293b;"/>
+                        <Label fx:id="avgTransactionValueLabel" text="Rp 0/transaksi" style="-fx-text-fill: #64748b;"/>
+                    </children>
+                </VBox>
+
+                <!-- Omzet Bulan Ini Card -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Omzet Bulan Ini" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label fx:id="monthRevenueLabel" text="Rp 0" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1e293b;"/>
+                        <VBox spacing="4">
+                            <children>
+                                <ProgressBar fx:id="monthRevenueProgress" progress="0.0" prefHeight="8"/>
+                                <Label fx:id="monthRevenueTargetLabel" text="Target: Rp 0" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- Laba Bersih Bulan Ini Card -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Laba Bersih Bulan Ini" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label fx:id="monthProfitLabel" text="Rp 0" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1E40AF;"/>
+                        <Label text="Setelah HPP &amp; biaya" style="-fx-text-fill: #64748b;"/>
+                    </children>
+                </VBox>
+            </children>
+            <padding>
+                <Insets bottom="16"/>
+            </padding>
+        </HBox>
+
+        <!-- Second Row of Cards -->
+        <HBox spacing="8" VBox.vgrow="NEVER">
+            <children>
+                <!-- Produk Stok Menipis Card -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Produk Stok Menipis" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label fx:id="lowStockCountLabel" text="0 produk" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1E40AF;"/>
+                        <Button fx:id="lowStockButton" text="Lihat Produk" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-background-radius: 8; -fx-border-radius: 8; -fx-padding: 6 12; -fx-font-size: 12px;"/>
+                    </children>
+                </VBox>
+
+                <!-- Retur Bulan Ini Card -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Retur Bulan Ini" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label fx:id="returnAmountLabel" text="Rp 0" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1E40AF;"/>
+                        <Label fx:id="returnCountLabel" text="0 retur" style="-fx-text-fill: #64748b;"/>
+                    </children>
+                </VBox>
+
+                <!-- Empty space for balance -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: transparent; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text=" " style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label text=" " style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1e293b;"/>
+                        <Label text=" " style="-fx-text-fill: #64748b;"/>
+                    </children>
+                </VBox>
+
+                <!-- Empty space for balance -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: transparent; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text=" " style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+                        <Label text=" " style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1e293b;"/>
+                        <Label text=" " style="-fx-text-fill: #64748b;"/>
+                    </children>
+                </VBox>
+            </children>
+            <padding>
+                <Insets bottom="16"/>
+            </padding>
+        </HBox>
+
+        <!-- Charts Section -->
+        <HBox spacing="8" VBox.vgrow="ALWAYS">
+            <children>
+                <!-- Sales Trend Chart -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Grafik Penjualan 7 Hari Terakhir" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+                        <LineChart fx:id="salesTrendChart" VBox.vgrow="ALWAYS" legendSide="BOTTOM" animated="false">
+                            <xAxis>
+                                <CategoryAxis fx:id="salesTrendXAxis" side="BOTTOM"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis fx:id="salesTrendYAxis" label="Juta Rupiah" side="LEFT"/>
+                            </yAxis>
+                        </LineChart>
+                    </children>
+                </VBox>
+
+                <!-- Category Sales Chart -->
+                <VBox HBox.hgrow="SOMETIMES" prefWidth="400" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Penjualan per Kategori" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+                        <PieChart fx:id="categoryPieChart" VBox.vgrow="ALWAYS" legendSide="BOTTOM"/>
+                    </children>
+                </VBox>
+            </children>
+            <padding>
+                <Insets bottom="16"/>
+            </padding>
+        </HBox>
+
+        <!-- Operational Information Section -->
+        <HBox spacing="8" VBox.vgrow="ALWAYS">
+            <children>
+                <!-- Top 5 Produk Terlaris -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Top 5 Produk Terlaris (Bulan Ini)" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+                        <TableView fx:id="topProductsTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+                            <columns>
+                                <TableColumn fx:id="productNameCol" text="Nama Produk" prefWidth="200"/>
+                                <TableColumn fx:id="qtySoldCol" text="Qty Terjual" prefWidth="100"/>
+                                <TableColumn fx:id="revenueCol" text="Total Omzet" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+
+                <!-- Kasir Paling Aktif -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Kasir Paling Aktif" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+                        <TableView fx:id="cashierTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+                            <columns>
+                                <TableColumn fx:id="cashierNameCol" text="Nama Kasir" prefWidth="150"/>
+                                <TableColumn fx:id="transactionCountCol" text="Jumlah Transaksi" prefWidth="120"/>
+                                <TableColumn fx:id="cashierRevenueCol" text="Total Omzet" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+
+                <!-- Metode Pembayaran -->
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+                    <children>
+                        <Label text="Metode Pembayaran" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+                        <TableView fx:id="paymentMethodTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+                            <columns>
+                                <TableColumn fx:id="paymentMethodCol" text="Metode" prefWidth="150"/>
+                                <TableColumn fx:id="paymentPercentageCol" text="Persentase" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+            </children>
+            <padding>
+                <Insets bottom="16"/>
+            </padding>
+        </HBox>
+
+        <!-- Alerts Section -->
+        <VBox style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+            <children>
+                <Label text="Perlu Perhatian" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+                <VBox fx:id="alertsContainer" spacing="8" VBox.vgrow="ALWAYS"/>
+            </children>
+        </VBox>
+    </children>
+    <padding>
+        <Insets bottom="12.0" left="14.0" right="14.0" top="12.0" />
+    </padding>
+</VBox>
+
+
+

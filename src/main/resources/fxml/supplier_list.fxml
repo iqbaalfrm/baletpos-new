@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.SupplierController"
+      style="-fx-background-color: #f8fafc; -fx-padding: 14;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <VBox spacing="4">
+            <Label text="Data Supplier" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #0f172a;"/>
+            <Label text="Kelola data supplier dan pemasok barang" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+        </VBox>
+        <HBox HBox.hgrow="ALWAYS"/>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <TextField fx:id="searchField" promptText="🔍 Cari supplier..." prefWidth="280"
+                       style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 16; -fx-font-size: 14px;"/>
+            <Button text="↻ Refresh" onAction="#handleRefresh" 
+                    style="-fx-background-color: white; -fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 20; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #e2e8f0; -fx-border-width: 1.5; -fx-cursor: hand;"/>
+        </HBox>
+    </HBox>
+
+    <!-- Action Buttons -->
+    <HBox spacing="12">
+        <Button fx:id="addButton" text="+ Tambah Supplier" onAction="#handleAdd" 
+                style="-fx-background-color: linear-gradient(to bottom, #1E40AF, #1F3A8A); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 24; -fx-background-radius: 10; -fx-border-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.3), 6, 0, 0, 2);"/>
+        <Button fx:id="editButton" text="✎ Edit" onAction="#handleEdit" disable="true"
+                style="-fx-background-color: rgba(245, 158, 11, 0.1); -fx-text-fill: #1E40AF; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 20; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: rgba(245, 158, 11, 0.3); -fx-border-width: 1.5; -fx-cursor: hand;"/>
+        <Button fx:id="deleteButton" text="🗑 Hapus" onAction="#handleDelete" disable="true"
+                style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-text-fill: #dc2626; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 20; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: rgba(239, 68, 68, 0.3); -fx-border-width: 1.5; -fx-cursor: hand;"/>
+    </HBox>
+
+    <!-- Table -->
+    <VBox fx:id="tableContainer" VBox.vgrow="ALWAYS" 
+          style="-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+        <padding>
+            <Insets top="0" right="0" bottom="0" left="0"/>
+        </padding>
+        <TableView fx:id="supplierTable" VBox.vgrow="ALWAYS" 
+                   style="-fx-background-color: transparent; -fx-border-color: transparent;">
+            <columns>
+                <TableColumn fx:id="codeCol" text="KODE" prefWidth="100" style="-fx-alignment: CENTER-LEFT;"/>
+                <TableColumn fx:id="nameCol" text="NAMA SUPPLIER" prefWidth="220"/>
+                <TableColumn fx:id="contactCol" text="CONTACT PERSON" prefWidth="160"/>
+                <TableColumn fx:id="phoneCol" text="TELEPON" prefWidth="140"/>
+                <TableColumn fx:id="emailCol" text="EMAIL" prefWidth="200"/>
+            </columns>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="12" style="-fx-padding: 48;">
+                    <Label text="📦" style="-fx-font-size: 48px;"/>
+                    <Label text="Belum ada data supplier" style="-fx-font-size: 16px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+                    <Label text="Klik tombol 'Tambah Supplier' untuk menambahkan data baru" style="-fx-font-size: 13px; -fx-text-fill: #94a3b8;"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+    </VBox>
+</VBox>
+
+
+

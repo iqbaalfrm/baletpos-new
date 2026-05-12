@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.InventoryReportController"
+      style="-fx-background-color: #f8f9fa; -fx-padding: 14;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="Laporan Aset / Inventory Valuation" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- Category Cards -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <VBox styleClass="stat-card">
+            <Label text="Semua Produk" styleClass="stat-title"/>
+            <Label fx:id="cardAllCount" text="0" styleClass="stat-value"/>
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label text="Laptop Baru" styleClass="stat-title"/>
+            <Label fx:id="cardLaptopNewCount" text="0" styleClass="stat-value"/>
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label text="Laptop Bekas" styleClass="stat-title"/>
+            <Label fx:id="cardLaptopSecondCount" text="0" styleClass="stat-value"/>
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label text="Sparepart" styleClass="stat-title"/>
+            <Label fx:id="cardSparepartCount" text="0" styleClass="stat-value"/>
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label text="Peripheral" styleClass="stat-title"/>
+            <Label fx:id="cardPeripheralCount" text="0" styleClass="stat-value"/>
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label text="Service" styleClass="stat-title"/>
+            <Label fx:id="cardServiceCount" text="0" styleClass="stat-value"/>
+        </VBox>
+    </HBox>
+
+    <!-- Filters -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <VBox spacing="5">
+            <Label text="Filter Kategori"/>
+            <ComboBox fx:id="filterCombo" prefWidth="150"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text=" "/>
+            <HBox spacing="10">
+                <Button text="Refresh" onAction="#handleRefresh" styleClass="secondary-button"/>
+                <Button text="Export PDF" onAction="#handleExport" styleClass="danger-button"/>
+                <Button text="Export Excel" onAction="#handleExportExcel" styleClass="success-button"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Cari Produk"/>
+            <TextField fx:id="searchField" promptText="Cari SKU atau nama" prefWidth="220"/>
+        </VBox>
+    </HBox>
+
+    <!-- Table -->
+    <VBox fx:id="tableContainer" VBox.vgrow="ALWAYS" spacing="0">
+        <TableView fx:id="reportTable" VBox.vgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: white;">
+            <columns>
+                <TableColumn fx:id="skuCol" text="SKU"/>
+                <TableColumn fx:id="nameCol" text="Nama Produk"/>
+                <TableColumn fx:id="typeCol" text="Kategori"/>
+                <TableColumn fx:id="qtyCol" text="Stok"/>
+                <TableColumn fx:id="hppCol" text="HPP/Unit"/>
+                <TableColumn fx:id="sellPriceCol" text="Harga Jual"/>
+                <TableColumn fx:id="hppValueCol" text="Nilai HPP"/>
+                <TableColumn fx:id="sellValueCol" text="Nilai Jual"/>
+            </columns>
+            <placeholder>
+                <Label text="Tidak ada data"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- Totals -->
+    <HBox spacing="30" alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 5;">
+        <VBox alignment="CENTER" spacing="3">
+            <Label text="Total Unit Stok" style="-fx-text-fill: #666;"/>
+            <Label fx:id="totalQtyLabel" text="0 unit" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        </VBox>
+        <Separator orientation="VERTICAL"/>
+        <VBox alignment="CENTER" spacing="3">
+            <Label text="Total Nilai HPP" style="-fx-text-fill: #666;"/>
+            <Label fx:id="totalHppValueLabel" text="Rp 0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #DC2626;"/>
+        </VBox>
+        <Separator orientation="VERTICAL"/>
+        <VBox alignment="CENTER" spacing="3">
+            <Label text="Total Nilai Jual" style="-fx-text-fill: #666;"/>
+            <Label fx:id="totalSellValueLabel" text="Rp 0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E40AF;"/>
+        </VBox>
+    </HBox>
+
+</VBox>
+
+
+

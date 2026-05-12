@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.baletpos.controller.SalesReportController">
+    <padding>
+        <Insets bottom="12.0" left="14.0" right="14.0" top="12.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Laporan Penjualan" textFill="#1e293b">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Cari Invoice / Customer..." prefWidth="250" style="-fx-padding: 8; -fx-background-radius: 20; -fx-border-radius: 20;"/>
+        <Button text="Cari" onAction="#handleFilter" styleClass="btn-outline"/>
+    </HBox>
+
+    <HBox spacing="16.0" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-padding: 10; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+             <Button fx:id="btnToday" text="Hari Ini" onAction="#handlePresetToday" styleClass="pill"/>
+             <Button fx:id="btnYesterday" text="Kemarin" onAction="#handlePresetYesterday" styleClass="pill"/>
+             <Button fx:id="btnWeek" text="7 Hari" onAction="#handlePresetWeek" styleClass="pill"/>
+             <Button fx:id="btnMonth" text="30 Hari" onAction="#handlePresetMonth" styleClass="pill"/>
+        </HBox>
+        
+        <Separator orientation="VERTICAL"/>
+        
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <DatePicker fx:id="startDatePicker" prefWidth="130.0" promptText="Mulai"/>
+            <Label text="-" textFill="#64748b"/>
+            <DatePicker fx:id="endDatePicker" prefWidth="130.0" promptText="Selesai"/>
+        </HBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnGenerate" text="Tampilkan Data" onAction="#handleFilter" styleClass="btn, btn-primary" />
+        <Button fx:id="btnExport" text="Export Excel" onAction="#handleExport" styleClass="btn, btn-outline" />
+    </HBox>
+
+    <VBox fx:id="tableContainer" VBox.vgrow="ALWAYS">
+    <TableView fx:id="salesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="invoiceCol" prefWidth="160.0" text="No. Invoice" />
+            <TableColumn fx:id="dateCol" prefWidth="130.0" text="Tanggal" />
+            <TableColumn fx:id="customerCol" prefWidth="100.0" text="Pelanggan" />
+            <TableColumn fx:id="paymentCol" prefWidth="80.0" text="Bayar" />
+            <TableColumn fx:id="statusCol" prefWidth="90.0" text="Status" />
+            <TableColumn fx:id="userCol" prefWidth="90.0" text="Kasir" />
+            <TableColumn fx:id="amountCol" prefWidth="130.0" text="Total" style="-fx-alignment: CENTER-RIGHT;" />
+            <TableColumn fx:id="actionCol" prefWidth="80.0" text="Aksi" sortable="false" />
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+        <placeholder>
+            <Label text="Tidak ada data"/>
+        </placeholder>
+    </TableView>
+</VBox>
+    
+    <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 10 0 0 0;">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Total Pendapatan:">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <Label fx:id="totalRevenueLabel" text="Rp 0" textFill="GREEN">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
+    </HBox>
+</VBox>
+
+
+

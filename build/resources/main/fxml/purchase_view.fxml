@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.PurchaseController"
+      style="-fx-background-color: #f8fafc; -fx-padding: 14;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <VBox spacing="4">
+            <Label text="Pembelian Barang" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #0f172a;"/>
+            <Label text="Catat pembelian stok dari supplier" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+        </VBox>
+    </HBox>
+
+    <!-- Supplier & Product Input Card -->
+    <HBox spacing="20" 
+          style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-padding: 14;">
+        
+        <!-- Supplier Selection -->
+        <VBox spacing="10" HBox.hgrow="SOMETIMES" minWidth="320">
+            <Label text="SUPPLIER" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #94a3b8; -fx-letter-spacing: 1;"/>
+            <HBox spacing="12">
+                <TextField fx:id="supplierSearchField" promptText="🔍 Cari supplier..." prefWidth="160"
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="supplierCombo" promptText="Pilih Supplier" prefWidth="200"
+                          style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10;"/>
+            </HBox>
+        </VBox>
+        
+        <Separator orientation="VERTICAL"/>
+        
+        <!-- Product Input -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="TAMBAH PRODUK" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #94a3b8; -fx-letter-spacing: 1;"/>
+            <HBox spacing="12">
+                <TextField fx:id="productSearchField" promptText="Ketik SKU atau nama produk..." HBox.hgrow="ALWAYS"
+                           onAction="#handleAddProduct"
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px;"/>
+                <Button text="+ Tambah" onAction="#handleAddProduct" 
+                        style="-fx-background-color: linear-gradient(to bottom, #1E40AF, #1F3A8A); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 24; -fx-background-radius: 10; -fx-border-radius: 10; -fx-cursor: hand;"/>
+            </HBox>
+        </VBox>
+        
+        <Separator orientation="VERTICAL"/>
+        
+        <!-- Update HPP -->
+        <VBox spacing="10" alignment="CENTER">
+            <Label text="OPSI" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #94a3b8; -fx-letter-spacing: 1;"/>
+            <CheckBox fx:id="updateHppCheck" text="Update HPP" selected="true"
+                      style="-fx-font-size: 13px; -fx-text-fill: #475569;"/>
+        </VBox>
+    </HBox>
+
+    <!-- Items Table -->
+    <VBox VBox.vgrow="ALWAYS" 
+          style="-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+        <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS" prefHeight="280"
+                   style="-fx-background-color: transparent; -fx-border-color: transparent;">
+            <columns>
+                <TableColumn fx:id="skuCol" text="SKU" prefWidth="130"/>
+                <TableColumn fx:id="nameCol" text="NAMA PRODUK" prefWidth="280"/>
+                <TableColumn fx:id="qtyCol" text="QTY" prefWidth="90" editable="true"/>
+                <TableColumn fx:id="hppCol" text="HPP/UNIT" prefWidth="140"/>
+                <TableColumn fx:id="subtotalCol" text="SUBTOTAL" prefWidth="160"/>
+            </columns>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="12" style="-fx-padding: 48;">
+                    <Label text="📦" style="-fx-font-size: 48px;"/>
+                    <Label text="Belum ada produk ditambahkan" style="-fx-font-size: 16px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+                    <Label text="Ketik SKU atau nama produk di atas untuk menambahkan" style="-fx-font-size: 13px; -fx-text-fill: #94a3b8;"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- Summary and Actions -->
+    <HBox spacing="24" alignment="CENTER_RIGHT">
+        <!-- Notes -->
+        <VBox spacing="8" HBox.hgrow="SOMETIMES" minWidth="320">
+            <Label text="Catatan" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+            <TextArea fx:id="notesArea" promptText="Catatan pembelian (opsional)..." prefWidth="320" prefHeight="70"
+                      style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10; -fx-font-size: 13px;"/>
+        </VBox>
+        
+        <Region HBox.hgrow="ALWAYS"/>
+        
+        <!-- Total & Actions -->
+        <VBox spacing="16" alignment="CENTER_RIGHT">
+            <!-- Total Badge -->
+            <HBox alignment="CENTER" spacing="12" 
+                  style="-fx-background-color: linear-gradient(to right, #f0f9ff, #e0f2fe); -fx-padding: 16 28; -fx-background-radius: 12; -fx-border-color: #BFDBFE; -fx-border-radius: 12; -fx-border-width: 1.5;">
+                <Label text="TOTAL" style="-fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: #1E40AF;"/>
+                <Label fx:id="totalLabel" text="Rp 0" style="-fx-font-size: 24px; -fx-font-weight: 800; -fx-text-fill: #1E40AF;"/>
+            </HBox>
+            
+            <!-- Action Buttons -->
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Button fx:id="removeButton" text="🗑 Hapus Item" onAction="#handleRemove" disable="true"
+                        style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-text-fill: #dc2626; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 20; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: rgba(239, 68, 68, 0.3); -fx-border-width: 1.5; -fx-cursor: hand;"/>
+                <Button text="↻ Bersihkan" onAction="#handleClear" 
+                        style="-fx-background-color: white; -fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: 600; -fx-padding: 12 20; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #e2e8f0; -fx-border-width: 1.5; -fx-cursor: hand;"/>
+                <Button fx:id="saveButton" text="✓ Simpan Pembelian" onAction="#handleSave" 
+                        style="-fx-background-color: linear-gradient(to bottom, #1E40AF, #1F3A8A); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 700; -fx-padding: 14 28; -fx-background-radius: 10; -fx-border-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(5, 150, 105, 0.35), 8, 0, 0, 3);"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>
+
+
+

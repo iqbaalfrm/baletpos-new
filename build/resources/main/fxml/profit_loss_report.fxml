@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="16" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.ProfitLossReportController"
+      style="-fx-background-color: #f8fafc; -fx-padding: 14;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="16" 
+          style="-fx-background-color: white; -fx-padding: 16 20; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);">
+        <VBox spacing="2">
+            <Label text="Laporan Laba Rugi" style="-fx-font-size: 18px; -fx-font-weight: 600; -fx-text-fill: #1e293b;"/>
+            <Label text="Profit &amp; Loss Statement" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <VBox spacing="4">
+                <Label text="Dari" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                <DatePicker fx:id="startDatePicker" prefWidth="130"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Sampai" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                <DatePicker fx:id="endDatePicker" prefWidth="130"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text=" " style="-fx-font-size: 11px;"/>
+                <HBox spacing="8">
+                    <Button text="Generate" onAction="#handleGenerateReport" styleClass="primary-button"/>
+                    <Button text="Export PDF" onAction="#handleExport" styleClass="danger-button"/>
+                    <Button text="Export Excel" onAction="#handleExportExcel" styleClass="success-button"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </HBox>
+
+    <!-- Report Content -->
+    <VBox fx:id="reportContainer" spacing="16" VBox.vgrow="ALWAYS" 
+          style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+        
+        <!-- Revenue Section -->
+        <VBox spacing="12" style="-fx-padding: 0 0 16 0; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+            <Label text="PENDAPATAN" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+            <HBox spacing="32">
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Penjualan Kotor" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="grossRevenueLabel" text="Rp 0" style="-fx-font-size: 18px; -fx-font-weight: 600;"/>
+                </VBox>
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Retur Penjualan" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="salesReturnsLabel" text="(Rp 0)" style="-fx-font-size: 18px; -fx-text-fill: #1E40AF;"/>
+                </VBox>
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Pendapatan Bersih" style="-fx-text-fill: #1e293b; -fx-font-weight: 600; -fx-font-size: 12px;"/>
+                    <Label fx:id="netRevenueLabel" text="Rp 0" style="-fx-font-size: 18px; -fx-font-weight: 700;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- COGS Section -->
+        <VBox spacing="12" style="-fx-padding: 0 0 16 0; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+            <Label text="HARGA POKOK PENJUALAN" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+            <HBox spacing="32">
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="HPP Penjualan" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="grossCogsLabel" text="Rp 0" style="-fx-font-size: 18px;"/>
+                </VBox>
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="HPP Retur" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="cogsReversalLabel" text="(Rp 0)" style="-fx-font-size: 18px; -fx-text-fill: #1E40AF;"/>
+                </VBox>
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="HPP Bersih" style="-fx-text-fill: #1e293b; -fx-font-weight: 600; -fx-font-size: 12px;"/>
+                    <Label fx:id="netCogsLabel" text="Rp 0" style="-fx-font-size: 18px; -fx-font-weight: 700;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Gross Profit -->
+        <VBox spacing="12" style="-fx-padding: 0 0 16 0; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+            <Label text="LABA KOTOR" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+            <HBox spacing="32">
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Laba Kotor" style="-fx-text-fill: #1e293b; -fx-font-weight: 600; -fx-font-size: 12px;"/>
+                    <Label fx:id="grossProfitLabel" text="Rp 0" style="-fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: #1E40AF;"/>
+                </VBox>
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Margin Kotor" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="grossMarginLabel" text="0%" style="-fx-font-size: 18px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Expenses -->
+        <VBox spacing="12" style="-fx-padding: 0 0 16 0; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+            <Label text="BIAYA OPERASIONAL" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+            <HBox spacing="32">
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Total Biaya" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="totalExpenseLabel" text="(Rp 0)" style="-fx-font-size: 18px; -fx-text-fill: #1E40AF;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Net Profit -->
+        <VBox spacing="8" style="-fx-background-color: #f0f9ff; -fx-padding: 12; -fx-background-radius: 8;">
+            <Label text="LABA BERSIH" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #1E40AF;"/>
+            <HBox spacing="32" alignment="CENTER_LEFT">
+                <VBox spacing="4" prefWidth="280">
+                    <Label text="Laba / (Rugi) Bersih" style="-fx-text-fill: #1e293b; -fx-font-weight: 600; -fx-font-size: 12px;"/>
+                    <Label fx:id="netProfitLabel" text="Rp 0" style="-fx-font-size: 28px; -fx-font-weight: 700; -fx-text-fill: #1E40AF;"/>
+                </VBox>
+                <VBox spacing="4" prefWidth="200">
+                    <Label text="Margin Bersih" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                    <Label fx:id="netMarginLabel" text="0%" style="-fx-font-size: 20px; -fx-font-weight: 600;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</VBox>
+
+
+

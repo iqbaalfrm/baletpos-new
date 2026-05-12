@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox spacing="0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.POSController"
+      styleClass="pos-root">
+
+    <!-- LEFT - Product Catalog -->
+    <VBox HBox.hgrow="ALWAYS" spacing="0" styleClass="pos-catalog-pane">
+        
+        <!-- Top Bar -->
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="pos-topbar">
+            <Button fx:id="backButton" text="Kembali" onAction="#handleBack" styleClass="btn-secondary" style="-fx-font-size: 13px; -fx-min-width: 86; -fx-min-height: 38;"/>
+            <TextField fx:id="searchProductField" promptText="Cari produk, SKU, atau kategori..." HBox.hgrow="ALWAYS"/>
+            <Button text="Refresh" onAction="#loadProductCatalog" styleClass="btn-primary"/>
+        </HBox>
+        
+        <!-- Category -->
+        <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="NEVER" styleClass="category-scroll" minHeight="52">
+            <HBox fx:id="categoryTabsContainer" spacing="8"/>
+        </ScrollPane>
+
+        <!-- Products -->
+        <VBox VBox.vgrow="ALWAYS" style="-fx-padding: 0 12 12 12;">
+            <Pagination fx:id="pagination" maxPageIndicatorCount="5" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </VBox>
+
+    <!-- RIGHT - Cart -->
+    <VBox styleClass="cart-pane">
+        
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="6" styleClass="cart-header">
+            <Label text="Keranjang" styleClass="cart-title"/>
+            <Label fx:id="cartCountLabel" text="0 item" styleClass="cart-count"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Reset" onAction="#handleClearCart" styleClass="btn-secondary" style="-fx-font-size: 11px;"/>
+        </HBox>
+
+        <!-- Cart Items -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" styleClass="cart-items">
+            <VBox fx:id="cartItemsContainer" spacing="0" styleClass="cart-items"/>
+        </ScrollPane>
+
+        <!-- Payment -->
+        <VBox spacing="0" styleClass="cart-summary">
+            
+            <!-- Summary -->
+            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 12 16; -fx-background-color: #ffffff;">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <HBox>
+                        <Label text="Subtotal" style="-fx-text-fill: #64748b; -fx-font-size: 11px;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="subtotalLabel" text="Rp 0" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Diskon" style="-fx-text-fill: #64748b; -fx-font-size: 11px;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Rp " style="-fx-text-fill: #64748b; -fx-font-size: 11px;"/>
+                        <TextField fx:id="discountPercentField" text="0" prefWidth="100" alignment="CENTER_RIGHT" style="-fx-font-size: 11px;"/>
+                    </HBox>
+                </VBox>
+                <VBox alignment="CENTER_RIGHT">
+                    <Label text="TOTAL" styleClass="total-label"/>
+                    <Label fx:id="grandTotalLabel" text="Rp 0" styleClass="grand-total"/>
+                </VBox>
+            </HBox>
+            
+            <!-- Payment Methods -->
+            <VBox fx:id="paymentMethodsContainer" spacing="6" style="-fx-padding: 8 16;"/>
+            
+            <!-- Split + Kembali -->
+            <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 0 16 8 16;">
+                <Button fx:id="addPaymentBtn" text="+ Split" onAction="#handleAddPaymentMethod" styleClass="btn-secondary" style="-fx-font-size: 11px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Kembali:" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                <Label fx:id="changeLabel" text="Rp 0" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #0f766e;"/>
+            </HBox>
+            
+            <!-- Pay Button -->
+            <HBox style="-fx-padding: 8 16 12 16;">
+                <Button fx:id="payPrintButton" text="Bayar dan Cetak Struk" onAction="#handlePayAndPrint" maxWidth="Infinity" minHeight="46" HBox.hgrow="ALWAYS" styleClass="btn-success" style="-fx-font-size: 14px; -fx-font-weight: 900;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</HBox>
+
+
+

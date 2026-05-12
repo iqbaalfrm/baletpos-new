@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="16" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.ProductController"
+      style="-fx-background-color: #f4f6f8; -fx-padding: 14;">
+
+    <!-- Summary Cards Row -->
+    <HBox fx:id="summaryCardsBox" spacing="12" alignment="CENTER_LEFT">
+        <!-- Total Produk -->
+        <VBox fx:id="cardTotalProduk" spacing="4" alignment="CENTER_LEFT" maxWidth="10000"
+              style="-fx-background-color: white; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #dce3ea; -fx-border-radius: 8;">
+            <Label text="Total Produk" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+            <Label fx:id="lblTotalProduk" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
+        </VBox>
+        
+        <!-- Stok Habis -->
+        <VBox fx:id="cardStokHabis" spacing="4" alignment="CENTER_LEFT" maxWidth="10000"
+              style="-fx-background-color: #fff7ed; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #fed7aa; -fx-border-radius: 8;">
+            <Label text="Stok Habis" style="-fx-font-size: 11px; -fx-text-fill: #9a3412;"/>
+            <Label fx:id="lblStokHabis" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #9a3412;"/>
+        </VBox>
+        
+        <!-- Stok Menipis -->
+        <VBox fx:id="cardStokMenipis" spacing="4" alignment="CENTER_LEFT" maxWidth="10000"
+              style="-fx-background-color: #fefce8; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #fde68a; -fx-border-radius: 8;">
+            <Label text="Stok Menipis (&lt; 5)" style="-fx-font-size: 11px; -fx-text-fill: #854d0e;"/>
+            <Label fx:id="lblStokMenipis" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #854d0e;"/>
+        </VBox>
+        
+        <!-- Stok Aman -->
+        <VBox fx:id="cardStokAman" spacing="4" alignment="CENTER_LEFT" maxWidth="10000"
+              style="-fx-background-color: #f0fdf4; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #bbf7d0; -fx-border-radius: 8;">
+            <Label text="Stok Aman (&gt;= 5)" style="-fx-font-size: 11px; -fx-text-fill: #166534;"/>
+            <Label fx:id="lblStokAman" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+        </VBox>
+    </HBox>
+
+    <!-- Search & Filter Bar -->
+    <HBox spacing="12" alignment="CENTER_LEFT" 
+          style="-fx-background-color: white; -fx-padding: 14 16; -fx-background-radius: 8; -fx-border-color: #dce3ea; -fx-border-radius: 8;">
+        
+        <!-- Search Field with Icon -->
+        <HBox alignment="CENTER_LEFT" spacing="0"
+              style="-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;">
+            <Label text="" style="-fx-padding: 10 0 10 12; -fx-text-fill: #94a3b8;"/>
+            <TextField fx:id="searchField" promptText="Cari SKU atau nama produk... (Ctrl+F)" prefWidth="300"
+                       style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 10 14 10 8;"/>
+        </HBox>
+
+        <!-- Category Filter -->
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="Kategori:" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+            <ComboBox fx:id="categoryFilter" prefWidth="140" 
+                      style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8;"/>
+        </HBox>
+        
+        <!-- Clear Filter Button -->
+        <Button fx:id="clearFilterBtn" text=" Reset" onAction="#handleClearFilter"
+                style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-padding: 8 12; -fx-cursor: hand; -fx-font-size: 11px;"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Action Buttons -->
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <!-- Ghost: Refresh -->
+            <Button fx:id="refreshBtn" text="" onAction="#handleRefresh" styleClass="btn-icon" prefWidth="38" prefHeight="38"/>
+            
+            <!-- Secondary: Import CSV -->
+            <Button text=" Import" onAction="#handleImport" styleClass="btn-outline"/>
+            
+            <!-- Primary: Add Product -->
+            <Button fx:id="addButton" text="+ Tambah Produk" onAction="#handleAdd" styleClass="primary-button"/>
+        </HBox>
+    </HBox>
+
+    <!-- Main Content: Table Full Width -->
+    <VBox fx:id="tableContainer" VBox.vgrow="ALWAYS"
+          style="-fx-background-color: white; -fx-padding: 0; -fx-background-radius: 8; -fx-border-color: #dce3ea; -fx-border-radius: 8;">
+        <TableView fx:id="productTable" VBox.vgrow="ALWAYS" style="-fx-background-radius: 8 8 0 0;">
+            <columns>
+                <TableColumn fx:id="skuCol" text="SKU" prefWidth="130"/>
+                <TableColumn fx:id="nameCol" text="Nama Produk" prefWidth="350"/>
+                <TableColumn fx:id="typeCol" text="Kategori" prefWidth="130"/>
+                <TableColumn fx:id="stockCol" text="Stok" prefWidth="80"/>
+                <TableColumn fx:id="hppCol" text="HPP" prefWidth="140"/>
+                <TableColumn fx:id="marginCol" text="Margin" prefWidth="80"/>
+                <TableColumn fx:id="priceCol" text="Harga Jual" prefWidth="150"/>
+                <TableColumn fx:id="actionsCol" text="" prefWidth="120" sortable="false"/>
+            </columns>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="8" style="-fx-padding: 22;">
+                    <Label text="" style="-fx-font-size: 48px;"/>
+                    <Label text="Belum ada produk" style="-fx-text-fill: #64748b; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                    <Label text="Mulai dengan menambahkan produk pertama Anda" style="-fx-text-fill: #94a3b8; -fx-font-size: 12px;"/>
+                    <Button text="+ Tambah Produk Pertama" onAction="#handleAdd" styleClass="primary-button"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+        <!-- Pagination added programmatically -->
+    </VBox>
+
+</VBox>
+
+
+

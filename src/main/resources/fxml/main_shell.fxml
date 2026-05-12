@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+
+<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.baletpos.controller.MainShellController"
+            styleClass="app-root">
+
+    <!-- TOP: App Bar (56px) -->
+    <top>
+        <VBox fx:id="appBar">
+            <HBox alignment="CENTER_LEFT" spacing="16" styleClass="app-bar">
+                <Label fx:id="pageTitle" text="Dashboard" styleClass="page-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="userBadge" text="User" styleClass="user-badge"/>
+                <Button text="Keluar" onAction="#handleLogout" styleClass="danger-button"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- LEFT: Sidebar (220px) -->
+    <left>
+        <VBox fx:id="sidebar" styleClass="sidebar">
+            <padding><Insets top="16" bottom="16"/></padding>
+            
+            <!-- Logo -->
+            <VBox spacing="5" alignment="CENTER_LEFT" styleClass="logo-block">
+                <ImageView fitHeight="32" preserveRatio="true">
+                    <Image url="@../images/logo.png"/>
+                </ImageView>
+                <Label text="BALET COMPUTER" styleClass="logo-title"/>
+                <Label text="Sistem Point of Sale" styleClass="logo-subtitle"/>
+            </VBox>
+
+            <!-- Menu Utama -->
+            <VBox spacing="2" style="-fx-padding: 8 8;">
+                <Label text="MENU UTAMA" styleClass="nav-section"/>
+                
+                <Button fx:id="btnDashboard" text="Dashboard" onAction="#showDashboard" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button active"/>
+                
+                <Button fx:id="btnPOS" text="POS / Kasir" onAction="#showPOS" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="btnProducts" text="Produk" onAction="#showProducts" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="btnPurchase" text="Pembelian" onAction="#showPurchase" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="btnSupplier" text="Supplier" onAction="#showSuppliers" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+            </VBox>
+
+            <!-- Admin Menu -->
+            <VBox spacing="2" style="-fx-padding: 0 8;">
+                <Label text="ADMIN" styleClass="nav-section"/>
+                
+                <Button fx:id="btnReturn" text="Retur/Mutasi" onAction="#showReturns" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="btnExpense" text="Biaya" onAction="#showExpenses" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+            </VBox>
+
+            <!-- Laporan Menu -->
+            <VBox spacing="2" style="-fx-padding: 0 8;">
+                <Label text="LAPORAN" styleClass="nav-section"/>
+                
+                <Button fx:id="btnSalesReport" text="Penjualan" onAction="#showSalesReport" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="btnInventoryReport" text="Aset/Inventory" onAction="#showInventoryReport" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="btnProfitLoss" text="Laba Rugi" onAction="#showProfitLossReport" maxWidth="Infinity" alignment="BASELINE_LEFT"
+                        styleClass="nav-button"/>
+            </VBox>
+
+            <VBox VBox.vgrow="ALWAYS"/>
+            
+            <!-- Footer -->
+            <VBox style="-fx-padding: 16;">
+                <Label text="v1.0.0" style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- CENTER: Content Area -->
+    <center>
+        <StackPane fx:id="contentArea" styleClass="content-root"/>
+    </center>
+
+</BorderPane>
+
+
+

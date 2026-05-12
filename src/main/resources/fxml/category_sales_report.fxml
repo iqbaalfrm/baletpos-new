@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.CategorySalesReportController"
+      style="-fx-background-color: #f8f9fa; -fx-padding: 14;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="Laporan Penjualan per Kategori" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- Date Presets -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+         <Label text="Preset Waktu:" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+         <Button text="Hari Ini" onAction="#handleToday" styleClass="action-button-outline"/>
+         <Button text="Kemarin" onAction="#handleYesterday" styleClass="action-button-outline"/>
+         <Button text="Minggu Ini" onAction="#handleThisWeek" styleClass="action-button-outline"/>
+         <Button text="Bulan Ini" onAction="#handleThisMonth" styleClass="action-button-outline"/>
+    </HBox>
+
+    <!-- Filters -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <VBox spacing="5">
+            <Label text="Kategori"/>
+            <ComboBox fx:id="categoryCombo" prefWidth="150"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Periode"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <DatePicker fx:id="startDatePicker" prefWidth="140"/>
+                <Label text="s/d"/>
+                <DatePicker fx:id="endDatePicker" prefWidth="140"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="5">
+            <Label text=" "/>
+            <HBox spacing="10">
+                <Button text="Generate" onAction="#handleGenerateReport" styleClass="primary-button"/>
+                <Button text="Export PDF" onAction="#handleExport" styleClass="danger-button"/>
+                <Button text="Export Excel" onAction="#handleExportExcel" styleClass="success-button"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Cari Produk"/>
+            <TextField fx:id="searchField" promptText="Cari SKU atau nama" prefWidth="220"/>
+        </VBox>
+    </HBox>
+
+    <!-- Table -->
+    <VBox fx:id="tableContainer" VBox.vgrow="ALWAYS" spacing="0">
+        <TableView fx:id="reportTable" VBox.vgrow="ALWAYS" style="-fx-background-color: white;">
+            <columns>
+                <TableColumn fx:id="skuCol" text="SKU" prefWidth="120"/>
+                <TableColumn fx:id="nameCol" text="Nama Produk" prefWidth="250"/>
+                <TableColumn fx:id="qtyCol" text="Qty Terjual" prefWidth="100"/>
+                <TableColumn fx:id="revenueCol" text="Omzet" prefWidth="150"/>
+                <TableColumn fx:id="cogsCol" text="HPP" prefWidth="150"/>
+                <TableColumn fx:id="profitCol" text="Laba Kotor" prefWidth="150"/>
+            </columns>
+            <placeholder>
+                <Label text="Tidak ada data"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- Totals -->
+    <HBox spacing="30" alignment="CENTER_RIGHT" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 5;">
+        <Label fx:id="totalQtyLabel" text="Total Qty: 0" style="-fx-font-weight: bold;"/>
+        <Label fx:id="totalRevenueLabel" text="Total Omzet: Rp 0" style="-fx-font-weight: bold; -fx-text-fill: #1E40AF;"/>
+        <Label fx:id="totalCogsLabel" text="Total HPP: Rp 0" style="-fx-font-weight: bold;"/>
+        <Label fx:id="totalProfitLabel" text="Total Laba Kotor: Rp 0" style="-fx-font-weight: bold; -fx-text-fill: #1E40AF;"/>
+    </HBox>
+
+</VBox>
+
+
+

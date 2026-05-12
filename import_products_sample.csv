@@ -1,0 +1,8 @@
+sku,name,category,hpp,margin,stock,min_stock
+LPT-001,Asus Vivobook Go 14,LAPTOP,5500000,10,10,2
+LPT-002,Lenovo Ideapad Slim 3,LAPTOP,6200000,12,5,2
+PRP-001,Mouse Logitech B100,PERIPHERAL,55000,30,50,10
+PRP-002,Flashdisk Sandisk 32GB,PERIPHERAL,60000,25,0,5
+SRV-001,Install Ulang Windows 11,SERVICE,0,100,999,0
+PRP-003,Keyboard Mechanical Rexus,PERIPHERAL,350000,20,3,2
+LPT-003,Acer Aspire 5,LAPTOP,7500000,10,1,1

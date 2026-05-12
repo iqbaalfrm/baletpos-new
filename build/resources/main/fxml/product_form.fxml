@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.Region?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.baletpos.controller.ProductFormController"
+      styleClass="form-dialog" spacing="0" minWidth="580">
+    
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" styleClass="form-dialog-header" spacing="8">
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label text="Form Produk" styleClass="title" style="-fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: #0f172a;"/>
+            <Label text="Masukkan informasi produk dengan lengkap" style="-fx-font-size: 13px; -fx-text-fill: #64748b;"/>
+        </VBox>
+        <Button text="✕" onAction="#handleCancel" 
+                style="-fx-background-color: transparent; -fx-font-size: 18px; -fx-text-fill: #94a3b8; -fx-cursor: hand; -fx-padding: 8;"/>
+    </HBox>
+
+    <!-- Body -->
+    <VBox styleClass="form-dialog-body" spacing="10">
+        <GridPane hgap="20" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            
+            <!-- Row 0: SKU & Nama -->
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="SKU / Barcode" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <TextField fx:id="skuField" promptText="Scan atau ketik SKU unik" 
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="Nama Produk" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <TextField fx:id="nameField" promptText="Nama lengkap produk" 
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <!-- Row 1: Tipe & Kategori -->
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <Label text="Tipe Produk" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <ComboBox fx:id="typeCombo" maxWidth="Infinity" promptText="Pilih tipe"
+                          style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 6 10; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <Label text="Kategori" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <ComboBox fx:id="categoryCombo" maxWidth="Infinity" promptText="Pilih kategori"
+                          style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 6 10; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <!-- Row 2: Brand & Stok -->
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <Label text="Brand / Merek" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <ComboBox fx:id="brandCombo" maxWidth="Infinity" promptText="Pilih brand"
+                          style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 6 10; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <Label text="Stok Awal" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <TextField fx:id="stockField" promptText="0" text="0"
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px;"/>
+            </VBox>
+        </GridPane>
+        
+        <Separator style="-fx-padding: 8 0;"/>
+        
+        <!-- Pricing Section -->
+        <VBox spacing="4">
+            <Label text="INFORMASI HARGA" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #94a3b8; -fx-letter-spacing: 1;"/>
+        </VBox>
+        
+        <GridPane hgap="20" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.33"/>
+                <ColumnConstraints percentWidth="33.33"/>
+                <ColumnConstraints percentWidth="33.33"/>
+            </columnConstraints>
+            
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="HPP (Modal)" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <TextField fx:id="hppField" promptText="Rp 0"
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="Margin (%)" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <TextField fx:id="marginField" promptText="10" text="10"
+                           style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px;"/>
+            </VBox>
+            
+            <VBox spacing="6" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                <Label text="Harga Jual (Est)" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                <TextField fx:id="sellingPricePreview" disable="true" editable="false" promptText="Auto"
+                           style="-fx-background-color: #EFF6FF; -fx-border-color: #93C5FD; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 12 14; -fx-font-size: 14px; -fx-text-fill: #1E40AF; -fx-font-weight: 700;"/>
+            </VBox>
+        </GridPane>
+        
+        <!-- Description -->
+        <VBox spacing="6">
+            <Label text="Deskripsi (Opsional)" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+            <TextArea fx:id="descField" prefRowCount="2" promptText="Catatan atau deskripsi tambahan untuk produk ini..."
+                      style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10; -fx-font-size: 14px;"/>
+        </VBox>
+    </VBox>
+
+    <!-- Footer -->
+    <HBox styleClass="form-dialog-footer" alignment="CENTER_RIGHT" spacing="12">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Batal" onAction="#handleCancel" 
+                style="-fx-background-color: white; -fx-text-fill: #475569; -fx-font-size: 14px; -fx-font-weight: 600; -fx-padding: 12 28; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #e2e8f0; -fx-border-width: 1.5; -fx-cursor: hand;"/>
+        <Button text="Simpan Produk" onAction="#handleSave" 
+                style="-fx-background-color: linear-gradient(to bottom, #1E40AF, #1F3A8A); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 600; -fx-padding: 12 32; -fx-background-radius: 10; -fx-border-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.3), 6, 0, 0, 2);"/>
+    </HBox>
+</VBox>
+
+
+

@@ -1,0 +1,56 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.0.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :compileJava UP-TO-DATE
+> Task :processResources FAILED
+gradle : 
+At line:1 char:1
++ gradle build --no-daemon 
+2>&1 | Out-File -FilePath 
+build_full.log -En ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
+    + CategoryInfo          
+    : NotSpecified: (:Stri  
+  ng) [], RemoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+FAILURE: Build failed with 
+an exception.
+
+* What went wrong:
+Execution failed for task 
+':processResources'.
+> Unable to delete 
+directory 'C:\skripsi\baletp
+os\build\resources\main'
+    Failed to delete some 
+children. This might happen 
+because a process has files 
+open or has its working 
+directory set in the target 
+directory.
+    - C:\skripsi\baletpos\bu
+ild\resources\main\assets\ic
+on\app.png
+    - C:\skripsi\baletpos\bu
+ild\resources\main\assets\ic
+on
+    - C:\skripsi\baletpos\bu
+ild\resources\main\assets
+
+* Try:
+> Run with --stacktrace 
+option to get the stack 
+trace.
+> Run with --info or 
+--debug option to get more 
+log output.
+> Run with --scan to 
+generate a Build Scan 
+(Powered by Develocity).
+> Get more help at 
+https://help.gradle.org.
+
+BUILD FAILED in 6s
+2 actionable tasks: 1 executed, 1 up-to-date

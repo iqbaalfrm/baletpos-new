@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.baletpos.controller.TransactionListController"
+      spacing="12" style="-fx-background-color: #f6f8fb; -fx-padding: 16 18 12 18;">
+
+    <HBox alignment="CENTER_LEFT" spacing="14">
+        <VBox spacing="2">
+            <Label text="Riwayat Transaksi" style="-fx-font-size: 22px; -fx-font-weight: 800; -fx-text-fill: #0f172a;"/>
+            <Label text="Kelola semua transaksi penjualan" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <HBox alignment="CENTER_RIGHT" spacing="8">
+            <TextField fx:id="searchField" promptText="Cari invoice, kasir, atau pelanggan..." prefWidth="320"
+                       style="-fx-background-color: white; -fx-border-color: #dbe3ec; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12; -fx-font-size: 13px;"/>
+            <Button text="Cari" onAction="#handleSearch"
+                    style="-fx-background-color: #1d4ed8; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 800; -fx-padding: 8 20; -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand;"/>
+        </HBox>
+    </HBox>
+
+    <HBox spacing="10">
+        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS"
+              style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #e5e7eb; -fx-border-width: 1; -fx-padding: 10 14;">
+            <VBox spacing="1">
+                <Label text="Hari Ini" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                <Label text="25 Transaksi" style="-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #1e293b;"/>
+            </VBox>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS"
+              style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #e5e7eb; -fx-border-width: 1; -fx-padding: 10 14;">
+            <VBox spacing="1">
+                <Label text="Pendapatan Hari Ini" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                <Label text="Rp 12.500.000" style="-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #1d4ed8;"/>
+            </VBox>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS"
+              style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #e5e7eb; -fx-border-width: 1; -fx-padding: 10 14;">
+            <VBox spacing="1">
+                <Label text="Transaksi Void" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                <Label text="2 Transaksi" style="-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #dc2626;"/>
+            </VBox>
+        </HBox>
+    </HBox>
+
+    <VBox fx:id="tableContainer" VBox.vgrow="NEVER"
+          style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #e5e7eb; -fx-border-width: 1;">
+        <TableView fx:id="transactionTable" VBox.vgrow="NEVER" minHeight="360" prefHeight="372" maxHeight="520"
+                   style="-fx-background-color: transparent; -fx-border-color: transparent;">
+            <columns>
+                <TableColumn fx:id="selectCol" prefWidth="45" resizable="false" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="invoiceCol" text="NO. NOTA" prefWidth="180"/>
+                <TableColumn fx:id="dateCol" text="TANGGAL" prefWidth="150"/>
+                <TableColumn fx:id="cashierCol" text="KASIR" prefWidth="130"/>
+                <TableColumn fx:id="totalCol" text="TOTAL" prefWidth="160"/>
+                <TableColumn fx:id="paymentCol" text="PEMBAYARAN" prefWidth="130" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="statusCol" text="STATUS" prefWidth="110" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="actionCol" text="AKSI" prefWidth="100" style="-fx-alignment: CENTER;"/>
+            </columns>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="6" style="-fx-padding: 18;">
+                    <Label text="Belum ada transaksi" style="-fx-font-size: 15px; -fx-font-weight: 700; -fx-text-fill: #64748b;"/>
+                    <Label text="Transaksi baru akan muncul di sini setelah penjualan" style="-fx-font-size: 12px; -fx-text-fill: #94a3b8;"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+    </VBox>
+</VBox>
