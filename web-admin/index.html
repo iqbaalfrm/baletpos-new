@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BaletPOS Finance Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <section class="login-screen" id="login-screen" aria-label="Login admin keuangan">
+    <form class="login-card" id="login-form">
+      <img class="login-logo" src="./assets/logobalet.jpg" alt="BaletPOS">
+      <div>
+        <p class="eyebrow">BaletPOS Web Admin</p>
+        <h1>Login Admin Keuangan</h1>
+      </div>
+      <label>
+        Username
+        <input name="username" autocomplete="username" placeholder="adminkeuangan" required>
+      </label>
+      <label>
+        Password
+        <input name="password" type="password" autocomplete="current-password" placeholder="keuangan123" required>
+      </label>
+      <p class="login-error" id="login-error" role="alert"></p>
+      <button class="primary-btn" type="submit">Masuk</button>
+      <p class="login-hint">Pakai akun desktop role Admin Keuangan.</p>
+    </form>
+  </section>
+
+  <div class="app-shell is-hidden" id="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="brand-logo" src="./assets/logobalet.jpg" alt="BaletPOS">
+        <div>
+          <h1>BaletPOS</h1>
+          <p>Finance Admin</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="active" href="#dashboard" data-view="dashboard"><span>01</span>Dashboard</a>
+        <a href="#produk" data-view="products"><span>02</span>Produk</a>
+        <a href="#pembelian" data-view="purchases"><span>03</span>Pembelian</a>
+        <a href="#supplier" data-view="suppliers"><span>04</span>Supplier</a>
+        <a href="#retur-mutasi" data-view="returns"><span>05</span>Retur / Mutasi</a>
+        <a href="#biaya" data-view="expenses"><span>06</span>Biaya</a>
+        <a href="#penjualan" data-view="sales"><span>07</span>Penjualan</a>
+        <a href="#transaksi" data-view="transactions"><span>08</span>Transaksi</a>
+        <a href="#laba-rugi" data-view="profit"><span>09</span>Laba Rugi</a>
+        <a href="#stock-opname" data-view="stock"><span>10</span>Stock Opname</a>
+        <a href="#rekonsiliasi" data-view="reconcile"><span>11</span>Rekonsiliasi</a>
+        <a href="#setting" data-view="settings"><span>12</span>Setting</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Role aktif</p>
+        <strong>Admin Keuangan</strong>
+        <button id="logout-btn" class="logout-btn" type="button">Keluar</button>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Monitoring laporan</p>
+          <h2 id="page-title">Dashboard Keuangan</h2>
+        </div>
+        <div class="topbar-actions">
+          <label class="search-box">
+            <span>Cari</span>
+            <input id="global-search" type="search" placeholder="Invoice, biaya, metode bayar">
+          </label>
+          <select id="period-select" aria-label="Periode laporan">
+            <option value="today">Hari ini</option>
+            <option value="week">Minggu ini</option>
+            <option value="month" selected>Bulan ini</option>
+          </select>
+          <button id="export-btn" class="primary-btn" type="button">Export CSV</button>
+          <span class="connection-status" id="connection-status">DB belum dicek</span>
+        </div>
+      </header>
+
+      <section class="summary-grid" aria-label="Ringkasan keuangan">
+        <article class="metric-card">
+          <p>Omzet Bersih</p>
+          <strong id="net-revenue">Rp 126.450.000</strong>
+          <span class="good">+8,4% dari periode lalu</span>
+        </article>
+        <article class="metric-card">
+          <p>Gross Profit</p>
+          <strong id="gross-profit">Rp 31.780.000</strong>
+          <span class="good">Margin 25,1%</span>
+        </article>
+        <article class="metric-card">
+          <p>Biaya Operasional</p>
+          <strong id="expense-total">Rp 12.380.000</strong>
+          <span class="warn">72% dari budget</span>
+        </article>
+        <article class="metric-card">
+          <p>Laba Bersih</p>
+          <strong id="net-profit">Rp 19.400.000</strong>
+          <span class="good">Margin 15,3%</span>
+        </article>
+      </section>
+
+      <section id="dashboard" class="view active-view">
+        <div class="content-grid">
+          <article class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <h3>Tren Kas Masuk</h3>
+                <p>Omzet dan laba kotor tujuh hari terakhir</p>
+              </div>
+              <div class="legend">
+                <span><i class="revenue-dot"></i>Omzet</span>
+                <span><i class="profit-dot"></i>Laba</span>
+              </div>
+            </div>
+            <div class="bar-chart" id="cash-chart" aria-label="Grafik kas masuk"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Metode Pembayaran</h3>
+                <p>Distribusi transaksi</p>
+              </div>
+            </div>
+            <div class="payment-list" id="payment-list"></div>
+          </article>
+        </div>
+
+        <div class="content-grid lower-grid">
+          <article class="panel table-panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>Transaksi Terbaru</h3>
+                <p>Data kasir yang masuk ke laporan</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Waktu</th>
+                    <th>Metode</th>
+                    <th class="right">Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="transaction-table"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Approval Biaya</h3>
+                <p>Menunggu validasi admin keuangan</p>
+              </div>
+            </div>
+            <div class="approval-list" id="approval-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="profit" class="view">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Laporan Laba Rugi</h3>
+              <p>Ringkasan akun pendapatan, HPP, biaya, dan laba bersih</p>
+            </div>
+          </div>
+          <div class="statement" id="profit-statement"></div>
+        </article>
+      </section>
+
+      <section id="sales" class="view">
+        <article class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Laporan Penjualan</h3>
+              <p>Monitoring invoice, metode bayar, dan status sinkronisasi</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Kasir</th>
+                  <th>Metode</th>
+                  <th class="right">Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="sales-table"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="products" class="view">
+        <div class="content-grid stock-grid">
+          <article class="panel table-panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>Produk</h3>
+                <p>Data produk, tipe, harga, dan stok dari desktop</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Produk</th>
+                    <th>Tipe</th>
+                    <th class="right">Stok</th>
+                    <th class="right">Harga Jual</th>
+                  </tr>
+                </thead>
+                <tbody id="product-table"></tbody>
+              </table>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Tambah Produk</h3>
+                <p>Input cepat untuk admin web</p>
+              </div>
+            </div>
+            <form class="stock-form" id="product-form">
+              <label>SKU<input name="sku" required></label>
+              <label>Nama Produk<input name="name" required></label>
+              <label>
+                Tipe
+                <select name="type">
+                  <option value="LAPTOP_NEW">Laptop Baru</option>
+                  <option value="LAPTOP_SECOND">Laptop Second</option>
+                  <option value="SPAREPARTS">Spareparts</option>
+                  <option value="PERIPHERAL">Peripheral</option>
+                  <option value="SERVICE">Service</option>
+                </select>
+              </label>
+              <label>HPP<input name="hpp" type="number" min="0" value="0"></label>
+              <label>Harga Jual<input name="sellingPrice" type="number" min="0" value="0"></label>
+              <label>Stok Awal<input name="stock" type="number" min="0" value="0"></label>
+              <button class="primary-btn" type="submit">Simpan Produk</button>
+            </form>
+          </article>
+        </div>
+      </section>
+
+      <section id="purchases" class="view">
+        <article class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Pembelian</h3>
+              <p>Riwayat purchase order dari desktop</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No Pembelian</th>
+                  <th>Tanggal</th>
+                  <th>Supplier</th>
+                  <th class="right">Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="purchase-table"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="suppliers" class="view">
+        <div class="content-grid stock-grid">
+          <article class="panel table-panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>Supplier</h3>
+                <p>Kontak supplier toko</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>Kontak</th>
+                    <th>Telepon</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody id="supplier-table"></tbody>
+              </table>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Tambah Supplier</h3>
+                <p>Data akan masuk ke DB desktop</p>
+              </div>
+            </div>
+            <form class="stock-form" id="supplier-form">
+              <label>Kode<input name="code" required></label>
+              <label>Nama Supplier<input name="name" required></label>
+              <label>Contact Person<input name="contact"></label>
+              <label>Telepon<input name="phone"></label>
+              <label>Email<input name="email" type="email"></label>
+              <label>Alamat<textarea name="address" rows="3"></textarea></label>
+              <button class="primary-btn" type="submit">Simpan Supplier</button>
+            </form>
+          </article>
+        </div>
+      </section>
+
+      <section id="returns" class="view">
+        <div class="content-grid">
+          <article class="panel table-panel">
+            <div class="panel-head">
+              <div>
+                <h3>Retur Penjualan</h3>
+                <p>Riwayat retur dari desktop</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No Retur</th>
+                    <th>Invoice</th>
+                    <th>Tanggal</th>
+                    <th class="right">Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="return-table"></tbody>
+              </table>
+            </div>
+          </article>
+          <article class="panel table-panel">
+            <div class="panel-head">
+              <div>
+                <h3>Mutasi Stok</h3>
+                <p>Adjustment, opname, dan restore stok</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Produk</th>
+                    <th>Tipe</th>
+                    <th class="right">Qty</th>
+                  </tr>
+                </thead>
+                <tbody id="movement-table"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="transactions" class="view">
+        <article class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Transaksi</h3>
+              <p>Daftar transaksi kasir lengkap</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Waktu</th>
+                  <th>Kasir</th>
+                  <th>Metode</th>
+                  <th class="right">Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="full-transaction-table"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="expenses" class="view">
+        <article class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Laporan Biaya</h3>
+              <p>Pengeluaran toko dan status approval</p>
+            </div>
+            <button class="secondary-btn" type="button">Tambah Biaya</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Kode</th>
+                  <th>Kategori</th>
+                  <th>Keterangan</th>
+                  <th class="right">Nominal</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="expense-table"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="stock" class="view">
+        <section class="stock-summary" aria-label="Ringkasan stok">
+          <article class="metric-card">
+            <p>Total SKU Aktif</p>
+            <strong id="stock-sku-total">0</strong>
+            <span>Produk siap dipantau</span>
+          </article>
+          <article class="metric-card">
+            <p>Stok Kritis</p>
+            <strong id="stock-critical-total">0</strong>
+            <span class="warn">Butuh restock</span>
+          </article>
+          <article class="metric-card">
+            <p>Sudah Dihitung</p>
+            <strong id="stock-counted-total">0%</strong>
+            <span>Progress opname</span>
+          </article>
+          <article class="metric-card">
+            <p>Selisih Estimasi</p>
+            <strong id="stock-diff-total">Rp 0</strong>
+            <span class="warn">Nilai koreksi stok</span>
+          </article>
+        </section>
+
+        <div class="content-grid stock-grid">
+          <article class="panel table-panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>Monitoring Stok</h3>
+                <p>Bandingkan stok sistem dengan hitungan fisik toko</p>
+              </div>
+              <button id="export-stock-btn" class="secondary-btn" type="button">Export SO</button>
+            </div>
+            <div class="table-tools">
+              <select id="stock-filter" aria-label="Filter stok">
+                <option value="all">Semua stok</option>
+                <option value="critical">Stok kritis</option>
+                <option value="diff">Ada selisih</option>
+              </select>
+              <input id="stock-search" type="search" placeholder="Cari SKU atau produk">
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Produk</th>
+                    <th class="right">Sistem</th>
+                    <th class="right">Fisik</th>
+                    <th class="right">Selisih</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="stock-table"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Input Hitung Fisik</h3>
+                <p>Masukkan hasil opname per SKU</p>
+              </div>
+            </div>
+            <form class="stock-form" id="stock-form">
+              <label>
+                SKU
+                <select id="stock-sku" name="sku"></select>
+              </label>
+              <label>
+                Jumlah fisik
+                <input name="physical" type="number" min="0" value="0">
+              </label>
+              <label>
+                Catatan
+                <textarea name="note" rows="4" placeholder="Rak, kondisi barang, atau alasan selisih"></textarea>
+              </label>
+              <button class="primary-btn" type="submit">Simpan Hitungan</button>
+            </form>
+            <div class="stock-alerts" id="stock-alerts"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="reconcile" class="view">
+        <div class="content-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Rekonsiliasi Kas</h3>
+                <p>Cocokkan total sistem dengan kas aktual</p>
+              </div>
+            </div>
+            <form class="reconcile-form" id="reconcile-form">
+              <label>
+                Kas sistem
+                <input name="systemCash" type="number" value="18450000">
+              </label>
+              <label>
+                Kas aktual
+                <input name="actualCash" type="number" value="18400000">
+              </label>
+              <label>
+                Catatan
+                <textarea name="note" rows="4" placeholder="Catatan selisih kas"></textarea>
+              </label>
+              <button class="primary-btn" type="submit">Hitung Selisih</button>
+            </form>
+          </article>
+          <article class="panel result-panel">
+            <p>Selisih Kas</p>
+            <strong id="cash-diff">Rp -50.000</strong>
+            <span>Perlu review transaksi tunai shift sore.</span>
+          </article>
+        </div>
+      </section>
+
+      <section id="settings" class="view">
+        <article class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Setting</h3>
+              <p>Konfigurasi aplikasi dari tabel settings</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Value</th>
+                  <th>Deskripsi</th>
+                </tr>
+              </thead>
+              <tbody id="setting-table"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

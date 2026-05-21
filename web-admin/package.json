@@ -1,0 +1,17 @@
+{
+  "name": "baletpos-web-admin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "vercel dev",
+    "check": "node --check app.js",
+    "migrate:sqlite": "node scripts/migrate-sqlite-to-supabase.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "vercel": "^39.1.3"
+  }
+}
