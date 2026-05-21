@@ -122,7 +122,12 @@ async function main() {
         console.log(`skip ${table.name}: not in SQLite`);
         continue;
       }
-      const rows = sqliteJson(`SELECT ${table.columns.map((column) => `"${column}"`).join(", ")} FROM "${table.name}"`);
+      
+      const pragma = sqliteJson(`PRAGMA table_info("${table.name}")`);
+      const existingCols = new Set(pragma.map(c => c.name));
+      const validColumns = table.columns.filter(c => existingCols.has(c));
+      
+      const rows = sqliteJson(`SELECT ${validColumns.map((column) => `"${column}"`).join(", ")} FROM "${table.name}"`);
       await insertRows(client, table, rows);
       console.log(`${table.name}: ${rows.length} rows`);
     }
