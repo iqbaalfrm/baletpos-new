@@ -185,13 +185,7 @@ public class ProductDAO {
     }
 
     private void insert(Product product) {
-        // Calculate Selling Price: HPP + (HPP * Margin / 100)
-        BigDecimal hpp = product.getHpp();
-        double margin = product.getMarginPercent();
-        BigDecimal marginAmount = hpp.multiply(BigDecimal.valueOf(margin)).divide(BigDecimal.valueOf(100),
-                java.math.RoundingMode.HALF_UP);
-        BigDecimal sellingPrice = hpp.add(marginAmount).setScale(0, java.math.RoundingMode.HALF_UP);
-        product.setSellingPrice(sellingPrice);
+        ensureSellingPrice(product);
 
         String sql = "INSERT INTO products (sku, name, product_type_code, category_id, brand_id, hpp, margin_percent, selling_price, stock, description, image_path) "
                 +
@@ -248,16 +242,10 @@ public class ProductDAO {
     }
 
     private void update(Product product) {
-        // Re-calculate Selling Price
-        BigDecimal hpp = product.getHpp();
-        double margin = product.getMarginPercent();
-        BigDecimal marginAmount = hpp.multiply(BigDecimal.valueOf(margin)).divide(BigDecimal.valueOf(100),
-                java.math.RoundingMode.HALF_UP);
-        BigDecimal sellingPrice = hpp.add(marginAmount).setScale(0, java.math.RoundingMode.HALF_UP);
-        product.setSellingPrice(sellingPrice);
+        ensureSellingPrice(product);
 
         String sql = "UPDATE products SET name = ?, category_id = ?, brand_id = ?, hpp = ?, margin_percent = ?, " +
-                "selling_price = ?, description = ?, image_path = ?, product_type_code = ?, is_active = ?, "
+                "selling_price = ?, stock = ?, description = ?, image_path = ?, product_type_code = ?, is_active = ?, "
                 +
                 "updated_at = " + SqlDialect.nowExpression() + " WHERE id = ?";
 
@@ -270,11 +258,12 @@ public class ProductDAO {
             pstmt.setInt(4, product.getHpp().intValue());
             pstmt.setDouble(5, product.getMarginPercent());
             pstmt.setInt(6, product.getSellingPrice().intValue());
-            pstmt.setString(7, product.getDescription());
-            pstmt.setString(8, product.getImagePath());
-            pstmt.setString(9, product.getProductType().name());
-            pstmt.setBoolean(10, product.isActive());
-            pstmt.setLong(11, product.getId());
+            pstmt.setInt(7, product.getStock());
+            pstmt.setString(8, product.getDescription());
+            pstmt.setString(9, product.getImagePath());
+            pstmt.setString(10, product.getProductType().name());
+            pstmt.setBoolean(11, product.isActive());
+            pstmt.setLong(12, product.getId());
 
             int rows = pstmt.executeUpdate();
             logger.info("[DB] Product updated: id={}, image_path={}, rows_affected={}",
@@ -283,6 +272,20 @@ public class ProductDAO {
             logger.error("Error updating product", e);
             throw new RuntimeException("Error updating product: " + e.getMessage());
         }
+    }
+
+    private void ensureSellingPrice(Product product) {
+        if (product.getSellingPrice() != null && product.getSellingPrice().compareTo(BigDecimal.ZERO) > 0) {
+            product.setSellingPrice(product.getSellingPrice().setScale(0, java.math.RoundingMode.HALF_UP));
+            return;
+        }
+
+        BigDecimal hpp = product.getHpp();
+        double margin = product.getMarginPercent();
+        BigDecimal marginAmount = hpp.multiply(BigDecimal.valueOf(margin)).divide(BigDecimal.valueOf(100),
+                java.math.RoundingMode.HALF_UP);
+        BigDecimal sellingPrice = hpp.add(marginAmount).setScale(0, java.math.RoundingMode.HALF_UP);
+        product.setSellingPrice(sellingPrice);
     }
 
     public void updateStock(Long productId, int quantityChange) {
