@@ -25,7 +25,9 @@ import {
   Loader2,
   Lock,
   Menu,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import {
   BarChart,
@@ -67,6 +69,98 @@ const formatRelativeTime = (dateString: string) => {
   }) + " WIB";
 };
 
+// Reusable Pagination component
+interface PaginationControlProps {
+  currentPage: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+}
+
+const PaginationControl = ({
+  currentPage,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+}: PaginationControlProps) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (totalPages <= 1) return null;
+
+  const startIdx = (currentPage - 1) * itemsPerPage + 1;
+  const endIdx = Math.min(currentPage * itemsPerPage, totalItems);
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) {
+        pages.push("...");
+      }
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 2) {
+        pages.push("...");
+      }
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="p-4 border-t border-slate-800/60 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="text-xs text-slate-400 font-semibold">
+        Menampilkan <span className="text-slate-200 font-bold">{startIdx} - {endIdx}</span> dari <span className="text-slate-200 font-bold">{totalItems}</span> data
+      </div>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-2 border border-slate-800 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-lg text-slate-300 transition cursor-pointer"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        {getPageNumbers().map((p, idx) => {
+          if (p === "...") {
+            return (
+              <span key={idx} className="px-3 py-1.5 text-xs font-bold text-slate-600">
+                ...
+              </span>
+            );
+          }
+          const isSelected = p === currentPage;
+          return (
+            <button
+              key={idx}
+              onClick={() => onPageChange(p as number)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
+                isSelected
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/10"
+                  : "border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              {p}
+            </button>
+          );
+        })}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-2 border border-slate-800 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-lg text-slate-300 transition cursor-pointer"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -77,6 +171,15 @@ export default function Home() {
   // Global filters
   const [searchQuery, setSearchQuery] = useState("");
   const [period, setPeriod] = useState("all");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset page when filter or view changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeView, period, searchQuery]);
 
   // Data states
   const [dashboardData, setDashboardData] = useState<any>({
@@ -1117,15 +1220,17 @@ export default function Home() {
                         </thead>
                         <tbody className="divide-y divide-slate-800/50">
                           {products.length > 0 ? (
-                            products.map((p: any, idx: number) => (
-                              <tr key={idx} className="hover:bg-slate-800/20 transition">
-                                <td className="p-4 font-bold text-slate-200">{p.sku}</td>
-                                <td className="p-4 font-bold text-slate-200">{p.name}</td>
-                                <td className="p-4 font-semibold text-slate-400 uppercase tracking-wider">{p.type}</td>
-                                <td className="p-4 font-bold text-slate-200 text-right">{p.stock}</td>
-                                <td className="p-4 font-bold text-slate-200 text-right">{formatCurrency(Number(p.selling_price))}</td>
-                              </tr>
-                            ))
+                            products
+                              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                              .map((p: any, idx: number) => (
+                                <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                  <td className="p-4 font-bold text-slate-200">{p.sku}</td>
+                                  <td className="p-4 font-bold text-slate-200">{p.name}</td>
+                                  <td className="p-4 font-semibold text-slate-400 uppercase tracking-wider">{p.type}</td>
+                                  <td className="p-4 font-bold text-slate-200 text-right">{p.stock}</td>
+                                  <td className="p-4 font-bold text-slate-200 text-right">{formatCurrency(Number(p.selling_price))}</td>
+                                </tr>
+                              ))
                           ) : (
                             <tr>
                               <td colSpan={5} className="p-8 text-center text-slate-500 font-semibold">
@@ -1136,6 +1241,12 @@ export default function Home() {
                         </tbody>
                       </table>
                     </div>
+                    <PaginationControl
+                      currentPage={currentPage}
+                      totalItems={products.length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
                   </div>
 
                   {/* Add Product Form */}
@@ -1248,13 +1359,15 @@ export default function Home() {
                       </thead>
                       <tbody className="divide-y divide-slate-800/50">
                         {purchases.length > 0 ? (
-                          purchases.map((po: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-slate-800/20 transition">
-                              <td className="p-4 font-bold text-slate-200">{po.number}</td>
-                              <td className="p-4 font-semibold text-slate-400">{new Date(po.date).toLocaleDateString("id-ID")}</td>
-                              <td className="p-4 font-bold text-slate-200">{po.supplier}</td>
-                              <td className="p-4 font-bold text-slate-200 text-right">{formatCurrency(Number(po.total))}</td>
-                              <td className="p-4">
+                          purchases
+                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .map((po: any, idx: number) => (
+                              <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                <td className="p-4 font-bold text-slate-200">{po.number}</td>
+                                <td className="p-4 font-semibold text-slate-400">{new Date(po.date).toLocaleDateString("id-ID")}</td>
+                                <td className="p-4 font-bold text-slate-200">{po.supplier}</td>
+                                <td className="p-4 font-bold text-slate-200 text-right">{formatCurrency(Number(po.total))}</td>
+                                <td className="p-4">
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
                                   po.status === "COMPLETED"
                                     ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
@@ -1275,6 +1388,12 @@ export default function Home() {
                       </tbody>
                     </table>
                   </div>
+                  <PaginationControl
+                    currentPage={currentPage}
+                    totalItems={purchases.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
                 </div>
               )}
 
@@ -1301,15 +1420,17 @@ export default function Home() {
                         </thead>
                         <tbody className="divide-y divide-slate-800/50">
                           {suppliers.length > 0 ? (
-                            suppliers.map((s: any, idx: number) => (
-                              <tr key={idx} className="hover:bg-slate-800/20 transition">
-                                <td className="p-4 font-bold text-slate-200">{s.code}</td>
-                                <td className="p-4 font-bold text-slate-200">{s.name}</td>
-                                <td className="p-4 font-semibold text-slate-400">{s.contact || "-"}</td>
-                                <td className="p-4 font-semibold text-slate-400">{s.phone || "-"}</td>
-                                <td className="p-4 font-semibold text-slate-400">{s.email || "-"}</td>
-                              </tr>
-                            ))
+                            suppliers
+                              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                              .map((s: any, idx: number) => (
+                                <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                  <td className="p-4 font-bold text-slate-200">{s.code}</td>
+                                  <td className="p-4 font-bold text-slate-200">{s.name}</td>
+                                  <td className="p-4 font-semibold text-slate-400">{s.contact || "-"}</td>
+                                  <td className="p-4 font-semibold text-slate-400">{s.phone || "-"}</td>
+                                  <td className="p-4 font-semibold text-slate-400">{s.email || "-"}</td>
+                                </tr>
+                              ))
                           ) : (
                             <tr>
                               <td colSpan={5} className="p-8 text-center text-slate-500 font-semibold">
@@ -1320,6 +1441,12 @@ export default function Home() {
                         </tbody>
                       </table>
                     </div>
+                    <PaginationControl
+                      currentPage={currentPage}
+                      totalItems={suppliers.length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
                   </div>
 
                   {/* Add Supplier Form */}
@@ -1423,10 +1550,12 @@ export default function Home() {
                         </thead>
                         <tbody className="divide-y divide-slate-800/50">
                           {returnsData.returns && returnsData.returns.length > 0 ? (
-                            returnsData.returns.map((ret: any, idx: number) => (
-                              <tr key={idx} className="hover:bg-slate-800/20 transition">
-                                <td className="p-4 font-bold text-slate-200">{ret.number}</td>
-                                <td className="p-4 font-bold text-slate-200">{ret.invoice}</td>
+                            returnsData.returns
+                              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                              .map((ret: any, idx: number) => (
+                                <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                  <td className="p-4 font-bold text-slate-200">{ret.number}</td>
+                                  <td className="p-4 font-bold text-slate-200">{ret.invoice}</td>
                                 <td className="p-4 font-bold text-slate-200 text-right">{formatCurrency(Number(ret.total))}</td>
                                 <td className="p-4">
                                   <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md text-[10px] font-black uppercase">
@@ -1445,6 +1574,12 @@ export default function Home() {
                         </tbody>
                       </table>
                     </div>
+                    <PaginationControl
+                      currentPage={currentPage}
+                      totalItems={returnsData.returns?.length || 0}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
                   </div>
 
                   {/* Stock Movements Table */}
@@ -1465,9 +1600,11 @@ export default function Home() {
                         </thead>
                         <tbody className="divide-y divide-slate-800/50">
                           {returnsData.movements && returnsData.movements.length > 0 ? (
-                            returnsData.movements.map((mov: any, idx: number) => (
-                              <tr key={idx} className="hover:bg-slate-800/20 transition">
-                                <td className="p-4 font-semibold text-slate-400">{new Date(mov.date).toLocaleDateString("id-ID")}</td>
+                            returnsData.movements
+                              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                              .map((mov: any, idx: number) => (
+                                <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                  <td className="p-4 font-semibold text-slate-400">{new Date(mov.date).toLocaleDateString("id-ID")}</td>
                                 <td className="p-4 font-bold text-slate-200">{mov.product}</td>
                                 <td className="p-4 font-bold text-slate-300 uppercase tracking-wide">{mov.type}</td>
                                 <td className={`p-4 font-bold text-right ${mov.qty >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
@@ -1485,6 +1622,12 @@ export default function Home() {
                         </tbody>
                       </table>
                     </div>
+                    <PaginationControl
+                      currentPage={currentPage}
+                      totalItems={returnsData.movements?.length || 0}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
                   </div>
 
                 </div>
@@ -1512,9 +1655,11 @@ export default function Home() {
                       </thead>
                       <tbody className="divide-y divide-slate-800/50">
                         {expenses.length > 0 ? (
-                          expenses.map((e: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-slate-800/20 transition">
-                              <td className="p-4 font-bold text-slate-200">{e.code}</td>
+                          expenses
+                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .map((e: any, idx: number) => (
+                              <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                <td className="p-4 font-bold text-slate-200">{e.code}</td>
                               <td className="p-4 font-bold text-slate-200">{e.category}</td>
                               <td className="p-4 font-semibold text-slate-400 max-w-xs truncate">{e.note || "-"}</td>
                               <td className="p-4 font-bold text-slate-200 text-right">{formatCurrency(Number(e.total))}</td>
@@ -1535,6 +1680,12 @@ export default function Home() {
                       </tbody>
                     </table>
                   </div>
+                  <PaginationControl
+                    currentPage={currentPage}
+                    totalItems={expenses.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
                 </div>
               )}
 
@@ -1559,9 +1710,11 @@ export default function Home() {
                       </thead>
                       <tbody className="divide-y divide-slate-800/50">
                         {products.length > 0 ? (
-                          products.map((item: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-slate-800/20 transition">
-                              <td className="p-4 font-bold text-slate-200">{item.invoice}</td>
+                          products
+                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .map((item: any, idx: number) => (
+                              <tr key={idx} className="hover:bg-slate-800/20 transition">
+                                <td className="p-4 font-bold text-slate-200">{item.invoice}</td>
                               <td className="p-4 font-semibold text-slate-400">{new Date(item.time).toLocaleString("id-ID")}</td>
                               <td className="p-4 font-semibold text-slate-300">{item.cashier || "-"}</td>
                               <td className="p-4 font-bold text-slate-300 uppercase tracking-wide">{item.method}</td>
@@ -1587,6 +1740,12 @@ export default function Home() {
                       </tbody>
                     </table>
                   </div>
+                  <PaginationControl
+                    currentPage={currentPage}
+                    totalItems={products.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
                 </div>
               )}
 
@@ -1679,10 +1838,12 @@ export default function Home() {
                           </thead>
                           <tbody className="divide-y divide-slate-800/50">
                             {stock.length > 0 ? (
-                              stock.map((s: any, idx: number) => {
-                                const diff = s.physical - s.system;
-                                return (
-                                  <tr key={idx} className="hover:bg-slate-800/20 transition">
+                              stock
+                                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                                .map((s: any, idx: number) => {
+                                  const diff = s.physical - s.system;
+                                  return (
+                                    <tr key={idx} className="hover:bg-slate-800/20 transition">
                                     <td className="p-4 font-bold text-slate-200">{s.sku}</td>
                                     <td className="p-4 font-bold text-slate-200">{s.name}</td>
                                     <td className="p-4 font-bold text-slate-300 text-right">{s.system}</td>
@@ -1703,6 +1864,12 @@ export default function Home() {
                           </tbody>
                         </table>
                       </div>
+                      <PaginationControl
+                        currentPage={currentPage}
+                        totalItems={stock.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                      />
                     </div>
 
                     {/* Stock Opname Adjustment Form */}
