@@ -254,7 +254,7 @@ public class ModalUtil {
 
     private static StackPane wrapWithOverlay(Node content) {
         StackPane root = new StackPane();
-        root.setStyle("-fx-background-color: rgba(15, 23, 42, 0.35); -fx-padding: 24;");
+        root.setStyle("-fx-background-color: rgba(148, 163, 184, 0.18); -fx-padding: 24;");
         root.getChildren().add(content);
         return root;
     }

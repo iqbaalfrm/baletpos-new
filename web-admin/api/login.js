@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { query, sendJson, handleError } = require("./_db");
+const { query, sendJson, handleError, signToken } = require("./_db");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -32,6 +32,7 @@ module.exports = async function handler(req, res) {
     }
 
     return sendJson(res, 200, {
+      token: signToken(user),
       user: {
         id: user.id,
         username: user.username,

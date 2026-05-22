@@ -18,6 +18,9 @@ public class SaleItem {
     private String serialNumber; // Transient (Input by user)
     private String buyerNik; // Transient - NIK pembeli (untuk laptop)
     private String buyerName; // Transient - Nama pembeli (untuk laptop)
+    private Long bonusProductId; // Bonus peripheral untuk pembelian laptop
+    private String bonusProductName; // Transient/display
+    private String warrantyLabel; // Garansi laptop
     private Product.ProductType productType; // Transient
 
     public SaleItem() {
@@ -134,6 +137,30 @@ public class SaleItem {
 
     public void setBuyerName(String buyerName) {
         this.buyerName = buyerName;
+    }
+
+    public Long getBonusProductId() {
+        return bonusProductId;
+    }
+
+    public void setBonusProductId(Long bonusProductId) {
+        this.bonusProductId = bonusProductId;
+    }
+
+    public String getBonusProductName() {
+        return bonusProductName;
+    }
+
+    public void setBonusProductName(String bonusProductName) {
+        this.bonusProductName = bonusProductName;
+    }
+
+    public String getWarrantyLabel() {
+        return warrantyLabel;
+    }
+
+    public void setWarrantyLabel(String warrantyLabel) {
+        this.warrantyLabel = warrantyLabel;
     }
 
     public Product.ProductType getProductType() {

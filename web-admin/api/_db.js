@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const crypto = require("crypto");
 
 let pool;
 
@@ -44,6 +45,62 @@ function handleError(res, error) {
   });
 }
 
+function getSessionSecret() {
+  return process.env.WEB_SESSION_SECRET || getConnectionString();
+}
+
+function signToken(user) {
+  const payload = {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+    exp: Date.now() + 8 * 60 * 60 * 1000,
+  };
+  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = crypto
+    .createHmac("sha256", getSessionSecret())
+    .update(body)
+    .digest("base64url");
+  return `${body}.${signature}`;
+}
+
+function verifyToken(req) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+  const [body, signature] = token.split(".");
+  if (!body || !signature) return null;
+
+  const expected = crypto
+    .createHmac("sha256", getSessionSecret())
+    .update(body)
+    .digest("base64url");
+  const signatureBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+  if (signatureBuffer.length !== expectedBuffer.length
+      || !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
+  if (!payload.exp || payload.exp < Date.now()) return null;
+  if (payload.role !== "ADMIN_KEUANGAN") return null;
+  return payload;
+}
+
+function requireFinance(req, res) {
+  try {
+    const user = verifyToken(req);
+    if (!user) {
+      sendJson(res, 401, { error: "Sesi tidak valid. Login ulang sebagai Admin Keuangan." });
+      return null;
+    }
+    return user;
+  } catch (error) {
+    sendJson(res, 401, { error: "Sesi tidak valid. Login ulang sebagai Admin Keuangan." });
+    return null;
+  }
+}
+
 function getDateRange(period) {
   const now = new Date();
   const end = new Date(now);
@@ -70,4 +127,6 @@ module.exports = {
   sendJson,
   handleError,
   getDateRange,
+  signToken,
+  requireFinance,
 };

@@ -32,7 +32,7 @@ public class BaletPOSTests {
 
         assertTrue(invoiceNumber.startsWith("INV-"));
         assertTrue(invoiceNumber.matches("INV-\\d{8}-\\d{4}"));
-        assertEquals(18, invoiceNumber.length());
+        assertEquals(17, invoiceNumber.length());
     }
 
     @Test
@@ -263,7 +263,7 @@ public class BaletPOSTests {
                 .divide(BigDecimal.valueOf(100), java.math.RoundingMode.HALF_UP);
         BigDecimal sellingPrice = hpp.add(marginAmount);
 
-        assertEquals(BigDecimal.valueOf(1200000), sellingPrice);
+        assertEquals(0, BigDecimal.valueOf(1200000).compareTo(sellingPrice));
     }
 
     @Test

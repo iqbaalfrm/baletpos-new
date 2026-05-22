@@ -4,16 +4,7 @@ const currency = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
-const demoCredentials = {
-  username: "finance",
-  password: "finance123",
-};
-
 let liveMode = false;
-
-function isLocalPreview() {
-  return ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
-}
 
 function setConnectionStatus(text, state = "warning") {
   const target = document.querySelector("#connection-status");
@@ -23,62 +14,13 @@ function setConnectionStatus(text, state = "warning") {
   target.classList.toggle("error", state === "error");
 }
 
-const chartData = [
-  { day: "Sen", revenue: 17.5, profit: 4.3 },
-  { day: "Sel", revenue: 22.1, profit: 5.6 },
-  { day: "Rab", revenue: 18.8, profit: 4.7 },
-  { day: "Kam", revenue: 25.4, profit: 6.8 },
-  { day: "Jum", revenue: 31.2, profit: 8.1 },
-  { day: "Sab", revenue: 28.7, profit: 7.4 },
-  { day: "Min", revenue: 20.6, profit: 5.2 },
-];
-
-const transactions = [
-  { invoice: "INV-20260521-0008", time: "14:20", method: "QRIS", total: 4250000, status: "Berhasil" },
-  { invoice: "INV-20260521-0007", time: "13:48", method: "Transfer BCA", total: 12100000, status: "Berhasil" },
-  { invoice: "INV-20260521-0006", time: "13:12", method: "Cash", total: 850000, status: "Pending" },
-  { invoice: "INV-20260521-0005", time: "12:44", method: "Akulaku", total: 7400000, status: "Review" },
-  { invoice: "INV-20260521-0004", time: "11:39", method: "QRIS", total: 2100000, status: "Berhasil" },
-];
-
-const expenses = [
-  { code: "EXP-202605-018", category: "Operasional", note: "Internet toko Mei", total: 650000, status: "Disetujui" },
-  { code: "EXP-202605-017", category: "Logistik", note: "Ongkir supplier SSD", total: 380000, status: "Pending" },
-  { code: "EXP-202605-016", category: "Marketing", note: "Iklan marketplace", total: 1250000, status: "Review" },
-  { code: "EXP-202605-015", category: "Maintenance", note: "Perbaikan printer nota", total: 475000, status: "Disetujui" },
-];
-
-const payments = [
-  { name: "QRIS", amount: 42850000, pct: 34 },
-  { name: "Transfer", amount: 38400000, pct: 30 },
-  { name: "Cash", amount: 27100000, pct: 22 },
-  { name: "Kredit", amount: 18100000, pct: 14 },
-];
-
-const approvals = [
-  { title: "Ongkir supplier SSD", meta: "Logistik - Rp 380.000", status: "Pending" },
-  { title: "Iklan marketplace", meta: "Marketing - Rp 1.250.000", status: "Review" },
-  { title: "Refund selisih transfer", meta: "Penjualan - Rp 125.000", status: "Pending" },
-];
-
-const profitRows = [
-  ["Penjualan Kotor", 134900000],
-  ["Retur Penjualan", -8450000],
-  ["Pendapatan Bersih", 126450000, "total"],
-  ["HPP Penjualan", -94670000],
-  ["Gross Profit", 31780000, "total"],
-  ["Biaya Operasional", -12380000],
-  ["Laba Bersih", 19400000, "total"],
-];
-
-let stockItems = [
-  { sku: "VGA-NV-4090-A", name: "RTX 4090 24GB", system: 4, physical: 4, hpp: 28500000, status: "Aman", note: "" },
-  { sku: "CPU-INT-149-K", name: "Core i9 14900K", system: 6, physical: 5, hpp: 8750000, status: "Selisih", note: "Satu unit display" },
-  { sku: "SSD-SAM-990-2", name: "Samsung 990 Pro 2TB", system: 12, physical: 12, hpp: 2100000, status: "Aman", note: "" },
-  { sku: "MS-LOG-GPRO", name: "Logitech G Pro X", system: 2, physical: 2, hpp: 1320000, status: "Kritis", note: "Di bawah minimum" },
-  { sku: "RAM-CRU-D5", name: "Crucial DDR5 16GB", system: 1, physical: 1, hpp: 760000, status: "Kritis", note: "Segera restock" },
-  { sku: "HDD-WD-1TB", name: "WD Blue 1TB HDD", system: 5, physical: 4, hpp: 540000, status: "Selisih", note: "Cek rak gudang" },
-];
+const chartData = [];
+const transactions = [];
+const expenses = [];
+const payments = [];
+const approvals = [];
+const profitRows = [];
+let stockItems = [];
 
 let products = [];
 let purchases = [];
@@ -86,6 +28,19 @@ let suppliers = [];
 let returnsData = [];
 let movements = [];
 let settingsData = [];
+
+function setBusy(isBusy, text = "Memuat data...") {
+  const status = document.querySelector("#connection-status");
+  if (!status) return;
+  if (isBusy) {
+    status.textContent = text;
+    status.classList.remove("live", "error");
+  }
+}
+
+function tableEmpty(colspan, text) {
+  return `<tr><td class="empty-table-cell" colspan="${colspan}">${text}</td></tr>`;
+}
 
 function badge(status) {
   const normalized = status.toLowerCase();
@@ -100,6 +55,10 @@ function badge(status) {
 
 function renderChart() {
   const target = document.querySelector("#cash-chart");
+  if (chartData.length === 0) {
+    target.innerHTML = `<div class="empty-state">Belum ada data omzet untuk periode ini.</div>`;
+    return;
+  }
   const max = Math.max(...chartData.map((item) => item.revenue));
   target.innerHTML = chartData.map((item) => `
     <div class="bar-group" title="${item.day}: omzet ${item.revenue} juta, laba ${item.profit} juta">
@@ -113,7 +72,9 @@ function renderChart() {
 }
 
 async function apiGet(path) {
-  const response = await fetch(path);
+  const response = await fetch(path, {
+    headers: authHeaders(),
+  });
   if (!response.ok) {
     throw new Error(`API ${path} gagal: ${response.status}`);
   }
@@ -123,7 +84,7 @@ async function apiGet(path) {
 async function apiPost(path, body) {
   const response = await fetch(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -131,6 +92,11 @@ async function apiPost(path, body) {
     throw new Error(data.error || `API ${path} gagal: ${response.status}`);
   }
   return response.json();
+}
+
+function authHeaders() {
+  const token = localStorage.getItem("baletposFinanceToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function currentPeriod() {
@@ -145,6 +111,8 @@ function normalizeStatus(status) {
 }
 
 function renderTransactions() {
+  const emptyRow = tableEmpty(5, "Belum ada data transaksi.");
+  const fullEmptyRow = tableEmpty(6, "Belum ada data transaksi.");
   const rows = transactions.map((item) => `
     <tr>
       <td><strong>${item.invoice}</strong></td>
@@ -154,7 +122,7 @@ function renderTransactions() {
       <td>${badge(item.status)}</td>
     </tr>
   `).join("");
-  document.querySelector("#transaction-table").innerHTML = rows;
+  document.querySelector("#transaction-table").innerHTML = rows || emptyRow;
   document.querySelector("#sales-table").innerHTML = transactions.map((item, index) => `
     <tr>
       <td><strong>${item.invoice}</strong></td>
@@ -163,7 +131,7 @@ function renderTransactions() {
       <td class="right">${currency.format(item.total)}</td>
       <td>${badge(item.status)}</td>
     </tr>
-  `).join("");
+  `).join("") || emptyRow;
   document.querySelector("#full-transaction-table").innerHTML = transactions.map((item, index) => `
     <tr>
       <td><strong>${item.invoice}</strong></td>
@@ -173,7 +141,7 @@ function renderTransactions() {
       <td class="right">${currency.format(item.total)}</td>
       <td>${badge(item.status)}</td>
     </tr>
-  `).join("");
+  `).join("") || fullEmptyRow;
 }
 
 function renderExpenses() {
@@ -185,7 +153,7 @@ function renderExpenses() {
       <td class="right">${currency.format(item.total)}</td>
       <td>${badge(item.status)}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(5, "Belum ada data biaya.");
 }
 
 function renderPayments() {
@@ -195,7 +163,7 @@ function renderPayments() {
       <span>${currency.format(item.amount)}</span>
       <div class="payment-track"><i style="width:${item.pct}%"></i></div>
     </div>
-  `).join("");
+  `).join("") || `<div class="empty-state">Belum ada pembayaran untuk periode ini.</div>`;
 }
 
 function renderApprovals() {
@@ -205,7 +173,7 @@ function renderApprovals() {
       <span>${item.meta}</span>
       ${badge(item.status)}
     </div>
-  `).join("");
+  `).join("") || `<div class="empty-state">Belum ada biaya menunggu review.</div>`;
 }
 
 function renderStatement() {
@@ -214,7 +182,7 @@ function renderStatement() {
       <strong>${label}</strong>
       <span>${currency.format(amount)}</span>
     </div>
-  `).join("");
+  `).join("") || `<div class="empty-state">Belum ada laporan laba rugi untuk periode ini.</div>`;
 }
 
 function renderProducts() {
@@ -226,7 +194,7 @@ function renderProducts() {
       <td class="right">${item.stock}</td>
       <td class="right">${currency.format(Number(item.selling_price || 0))}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(5, "Belum ada data produk.");
 }
 
 function renderPurchases() {
@@ -238,7 +206,7 @@ function renderPurchases() {
       <td class="right">${currency.format(Number(item.total || 0))}</td>
       <td>${badge(item.status || "Completed")}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(5, "Belum ada data pembelian.");
 }
 
 function renderSuppliers() {
@@ -250,7 +218,7 @@ function renderSuppliers() {
       <td>${item.phone || "-"}</td>
       <td>${item.email || "-"}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(5, "Belum ada data supplier.");
 }
 
 function renderReturns() {
@@ -262,7 +230,7 @@ function renderReturns() {
       <td class="right">${currency.format(Number(item.total || 0))}</td>
       <td>${badge(item.status || "Completed")}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(5, "Belum ada data retur.");
 
   document.querySelector("#movement-table").innerHTML = movements.map((item) => `
     <tr>
@@ -271,7 +239,7 @@ function renderReturns() {
       <td>${item.type}</td>
       <td class="right">${Number(item.qty || 0)}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(4, "Belum ada data mutasi stok.");
 }
 
 function renderSettings() {
@@ -281,11 +249,12 @@ function renderSettings() {
       <td>${item.value}</td>
       <td>${item.description || "-"}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(3, "Belum ada data setting.");
 }
 
 async function loadLiveData() {
   try {
+    setBusy(true);
     const period = currentPeriod();
     const [health, dashboard, salesData, expensesData, profitData, stockData, productData, purchaseData, supplierData, returnsPayload, settingsPayload] = await Promise.all([
       apiGet("/api/health"),
@@ -379,10 +348,8 @@ async function loadLiveData() {
   } catch (error) {
     liveMode = false;
     console.warn("Live DB belum aktif.", error);
-    setConnectionStatus("DB belum tersambung", "error");
-    if (!isLocalPreview()) {
-      alert("Database Vercel belum tersambung. Set DATABASE_URL ke database yang sama dengan desktop.");
-    }
+    setConnectionStatus("DB gagal tersambung", "error");
+    throw error;
   }
 }
 
@@ -415,7 +382,7 @@ function renderStock() {
       <td class="right">${item.diff > 0 ? "+" : ""}${item.diff}</td>
       <td>${badge(item.status)}</td>
     </tr>
-  `).join("");
+  `).join("") || tableEmpty(6, "Belum ada data stok.");
 
   const critical = stockItems.filter((item) => stockStatus(item) === "Kritis").length;
   const counted = stockItems.filter((item) => Number.isFinite(item.physical)).length;
@@ -425,7 +392,9 @@ function renderStock() {
 
   document.querySelector("#stock-sku-total").textContent = String(stockItems.length);
   document.querySelector("#stock-critical-total").textContent = String(critical);
-  document.querySelector("#stock-counted-total").textContent = `${Math.round((counted / stockItems.length) * 100)}%`;
+  document.querySelector("#stock-counted-total").textContent = stockItems.length === 0
+    ? "0%"
+    : `${Math.round((counted / stockItems.length) * 100)}%`;
   document.querySelector("#stock-diff-total").textContent = currency.format(diffValue);
   renderStockAlerts();
 }
@@ -434,7 +403,7 @@ function renderStockOptions() {
   const select = document.querySelector("#stock-sku");
   select.innerHTML = stockItems.map((item) => `
     <option value="${item.sku}">${item.sku} - ${item.name}</option>
-  `).join("");
+  `).join("") || `<option value="">Belum ada produk</option>`;
 }
 
 function renderStockAlerts() {
@@ -447,7 +416,7 @@ function renderStockAlerts() {
       <strong>${item.status}: ${item.name}</strong>
       <span>${item.sku} - Sistem ${item.system}, fisik ${item.physical}, selisih ${item.diff}</span>
     </div>
-  `).join("");
+  `).join("") || `<div class="empty-state">Tidak ada stok kritis atau selisih.</div>`;
 }
 
 function setView(viewId) {
@@ -625,6 +594,11 @@ function setupManagementForms() {
 function showApp() {
   document.querySelector("#login-screen").classList.add("is-hidden");
   document.querySelector("#app-shell").classList.remove("is-hidden");
+  const user = JSON.parse(localStorage.getItem("baletposFinanceUser") || "null");
+  const label = document.querySelector("#active-user-label");
+  if (label && user) {
+    label.textContent = user.fullName || user.username || "Admin Keuangan";
+  }
 }
 
 function showLogin() {
@@ -633,7 +607,8 @@ function showLogin() {
 }
 
 function setupAuth() {
-  const isLoggedIn = localStorage.getItem("baletposFinanceLoggedIn") === "true";
+  const isLoggedIn = localStorage.getItem("baletposFinanceLoggedIn") === "true"
+    && Boolean(localStorage.getItem("baletposFinanceToken"));
   if (isLoggedIn) {
     showApp();
   } else {
@@ -648,31 +623,30 @@ function setupAuth() {
     const error = document.querySelector("#login-error");
 
     try {
-      await apiPost("/api/login", { username, password });
+      error.textContent = "";
+      setBusy(true, "Login...");
+      const result = await apiPost("/api/login", { username, password });
       localStorage.setItem("baletposFinanceLoggedIn", "true");
+      localStorage.setItem("baletposFinanceUser", JSON.stringify(result.user));
+      localStorage.setItem("baletposFinanceToken", result.token);
       error.textContent = "";
       showApp();
       await loadLiveData();
       return;
     } catch (apiError) {
       console.warn("Login DB gagal.", apiError);
+      localStorage.removeItem("baletposFinanceLoggedIn");
+      localStorage.removeItem("baletposFinanceUser");
+      localStorage.removeItem("baletposFinanceToken");
+      showLogin();
+      error.textContent = apiError.message || "Login gagal. Pastikan akun role Admin Keuangan dan DATABASE_URL memakai DB desktop yang sama.";
     }
-
-    if (isLocalPreview() && username === demoCredentials.username && password === demoCredentials.password) {
-      localStorage.setItem("baletposFinanceLoggedIn", "true");
-      error.textContent = "";
-      showApp();
-      setConnectionStatus("Preview lokal: data dummy", "error");
-      return;
-    }
-
-    error.textContent = isLocalPreview()
-      ? "Login DB gagal. Untuk preview lokal bisa pakai finance / finance123."
-      : "Login gagal. Pastikan DATABASE_URL Vercel memakai DB desktop yang sama.";
   });
 
   document.querySelector("#logout-btn").addEventListener("click", () => {
     localStorage.removeItem("baletposFinanceLoggedIn");
+    localStorage.removeItem("baletposFinanceUser");
+    localStorage.removeItem("baletposFinanceToken");
     showLogin();
   });
 }
@@ -707,7 +681,12 @@ function initializeApp() {
   }
 
   if (localStorage.getItem("baletposFinanceLoggedIn") === "true") {
-    loadLiveData();
+    loadLiveData().catch(() => {
+      localStorage.removeItem("baletposFinanceLoggedIn");
+      localStorage.removeItem("baletposFinanceUser");
+      localStorage.removeItem("baletposFinanceToken");
+      showLogin();
+    });
   }
 }
 

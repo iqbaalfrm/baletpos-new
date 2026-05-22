@@ -1,5 +1,7 @@
 # BaletPOS - Sistem Point of Sale untuk Toko Komputer
 
+Panduan trial desktop toko: [docs/TRIAL_TOKO_DESKTOP.md](docs/TRIAL_TOKO_DESKTOP.md)
+
 ## Deskripsi
 BaletPOS adalah aplikasi desktop Point of Sale (POS) yang dibangun menggunakan **Java 17+**, **JavaFX**, dan **SQLite** untuk kebutuhan toko komputer. Aplikasi ini bersifat **offline-first** dengan semua data tersimpan secara lokal.
 
@@ -11,7 +13,7 @@ BaletPOS adalah aplikasi desktop Point of Sale (POS) yang dibangun menggunakan *
 - Checkout dengan validasi stok otomatis
 - Multiple payment method (CASH, TRANSFER, QRIS)
 - Cetak struk PDF otomatis
-- VOID transaksi (khusus ADMIN)
+- VOID transaksi (khusus Admin Toko/Admin Keuangan)
 
 ### 📦 Pembelian (Purchase Order)
 - Input pembelian dari supplier
@@ -40,7 +42,7 @@ BaletPOS adalah aplikasi desktop Point of Sale (POS) yang dibangun menggunakan *
   - Laba/Rugi bersih & margin bersih
 
 ### 👤 Otoritas & Keamanan
-- Role-Based Access Control (ADMIN / KASIR)
+- Role-Based Access Control (KASIR / ADMIN_TOKO / ADMIN_KEUANGAN)
 - Audit log untuk aksi penting
 - Password hashing menggunakan BCrypt
 
@@ -147,14 +149,20 @@ gradlew.bat run
 ### Login Default
 | Username | Password | Role |
 |----------|----------|------|
-| admin | admin123 | ADMIN |
 | kasir | kasir123 | KASIR |
+| admintoko | toko123 | ADMIN_TOKO |
+| adminkeuangan | keuangan123 | ADMIN_KEUANGAN |
+| admin | admin123 | ADMIN_TOKO (legacy) |
 
 ## Database
 
 Database SQLite akan dibuat otomatis di:
 - **Windows**: `C:\Users\<user>\baletpos\baletpos.db`
 - **macOS/Linux**: `~/baletpos/baletpos.db`
+
+Mode Supabase/PostgreSQL aktif jika `BALETPOS_DB_URL`, `BALETPOS_DB_USER`, dan `BALETPOS_DB_PASSWORD` diset. Lihat `SUPABASE_SETUP.md`.
+
+Backup otomatis harian aktif secara default dan disimpan ke `C:\Users\<user>\.baletpos\backups\`. Jika Google Drive service account dikonfigurasi, file backup ZIP akan diupload otomatis ke Drive.
 
 ### Schema
 Lihat file `src/main/resources/sql/schema.sql` untuk struktur tabel lengkap.

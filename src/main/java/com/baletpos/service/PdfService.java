@@ -55,10 +55,10 @@ public class PdfService {
             PdfWriter writer = new PdfWriter(dest);
             PdfDocument pdf = new PdfDocument(writer);
 
-            // Format Landscape A5 (Sesuai request landscape sebelumnya)
-            // HTML template sebenernya flexible, tapi landscape lebih aman untuk tabel
-            // lebar
-            pdf.setDefaultPageSize(PageSize.A5.rotate());
+            // Format ukuran kertas 24cm (Lebar 9.5 inch = ~24.13cm) x Full halaman (11 inch = ~27.94cm)
+            // 1 inch = 72 points -> 9.5 * 72 = 684, 11 * 72 = 792
+            com.itextpdf.kernel.geom.PageSize customPageSize = new com.itextpdf.kernel.geom.PageSize(684f, 792f);
+            pdf.setDefaultPageSize(customPageSize);
 
             Document doc = new Document(pdf);
             doc.setMargins(20, 20, 20, 20);
@@ -230,6 +230,12 @@ public class PdfService {
                         if (item.getBuyerNik() != null && !item.getBuyerNik().isBlank()) {
                             info += " (" + item.getBuyerNik() + ")";
                         }
+                    }
+                    if (item.getBonusProductName() != null && !item.getBonusProductName().isBlank()) {
+                        info += "\nBonus: " + item.getBonusProductName();
+                    }
+                    if (item.getWarrantyLabel() != null && !item.getWarrantyLabel().isBlank()) {
+                        info += "\nGaransi: " + item.getWarrantyLabel();
                     }
 
                     leftInfoCell.add(new Paragraph(info).setFontSize(8).setMarginBottom(4));

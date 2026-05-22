@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 public class UserDAO {
@@ -32,6 +33,31 @@ public class UserDAO {
             }
         } catch (SQLException e) {
             logger.error("Error finding user by username: {}", username, e);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<User> findFirstActiveByRoles(List<User.Role> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String placeholders = String.join(",", java.util.Collections.nCopies(roles.size(), "?"));
+        String sql = "SELECT * FROM users WHERE is_active = 1 AND role IN (" + placeholders + ") ORDER BY id LIMIT 1";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < roles.size(); i++) {
+                pstmt.setString(i + 1, roles.get(i).name());
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapResultSetToUser(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding active user by roles: {}", roles, e);
         }
         return Optional.empty();
     }

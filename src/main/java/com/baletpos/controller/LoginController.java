@@ -48,14 +48,11 @@ public class LoginController {
             User user = Session.getInstance().getCurrentUser();
 
             try {
-                if (user.getRole() == User.Role.ADMIN) {
-                    // Admin go to Dashboard
+                if (user.getRole() == User.Role.KASIR
+                        || user.getRole() == User.Role.ADMIN_TOKO
+                        || user.getRole() == User.Role.ADMIN_KEUANGAN) {
                     openDashboard();
-                } else if (user.getRole() == User.Role.KASIR) {
-                    // Cashier go to POS
-                    openPOS();
                 } else {
-                    // Fallback or unknown role
                     showError("Role user tidak dikenali.");
                 }
             } catch (IOException e) {

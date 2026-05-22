@@ -40,6 +40,7 @@ Modul lain sudah tampil live dari database yang sama dan bisa diperluas menjadi 
 
 ```text
 DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@HOST:PORT/postgres?sslmode=require
+WEB_SESSION_SECRET=isi-dengan-random-secret-panjang
 ```
 
 Gunakan database Supabase/PostgreSQL yang sama dengan desktop. Desktop memakai format JDBC:
@@ -54,18 +55,28 @@ Vercel API Node memakai format PostgreSQL URI biasa di `DATABASE_URL`.
 
 ## Local Preview
 
-Buka `index.html` langsung di browser.
+Jalankan server lokal agar route `/api/*` aktif tanpa harus login Vercel CLI:
 
-Jika `DATABASE_URL` belum diset atau API gagal, UI akan fallback ke data dummy di `app.js` untuk preview.
+```powershell
+npm start
+```
+
+URL lokal:
+
+```text
+http://localhost:4173
+```
+
+Jika ingin menjalankan runtime Vercel lokal, gunakan:
+
+```powershell
+npm run vercel:dev
+```
+
+Web admin tidak memakai data dummy. Jika `DATABASE_URL` belum diset atau API gagal, login/laporan akan gagal supaya tidak tertukar dengan data contoh.
 
 Login produksi memakai user tabel `users` dengan role `ADMIN_KEUANGAN`, contoh default desktop:
 
 ```text
 adminkeuangan / keuangan123
-```
-
-Login demo fallback hanya aktif saat preview lokal tanpa API:
-
-```text
-finance / finance123
 ```

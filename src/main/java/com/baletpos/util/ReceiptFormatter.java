@@ -1,4 +1,4 @@
-package com.baletpos.util;
+﻿package com.baletpos.util;
 
 import com.baletpos.model.Sale;
 import com.baletpos.model.SaleItem;
@@ -12,8 +12,8 @@ import java.util.Locale;
 
 public class ReceiptFormatter {
 
-    // SPEC: 40-42 Characters (We use 42 for max usage of space)
-    private static final int WIDTH = 42;
+    // SPEC: 80 Characters for 9.5 inch Continuous Form
+    private static final int WIDTH = 80;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
     private static final DecimalFormat CURRENCY_FMT;
 
@@ -30,87 +30,66 @@ public class ReceiptFormatter {
         // ==================================================
         // HEADER
         // ==================================================
-        sb.append("BALET COMPUTER\n");
-        sb.append("Jalan Prof. Moh. Yamin No 57\n");
-        sb.append("Kudaile Slawi Kab. Tegal\n");
+        sb.append(center("BALET COMPUTER")).append("\n");
+        sb.append(center("Jalan Prof. Moh. Yamin No 57")).append("\n");
+        sb.append(center("Kudaile Slawi Kab. Tegal")).append("\n");
         sb.append(separator()).append("\n");
 
-        sb.append(pair("No Nota", ": " + sale.getInvoiceNumber()));
-        sb.append("\n");
-        sb.append(pair("Tanggal", ": " + sale.getSaleDate().format(DATE_FMT)));
+        sb.append(pair("No Nota", ": " + sale.getInvoiceNumber(), "Tanggal", ": " + sale.getSaleDate().format(DATE_FMT)));
         sb.append("\n");
 
         String cashier = sale.getCreatedByName() != null ? sale.getCreatedByName() : "System";
-        sb.append(pair("Kasir", ": " + cashier));
-        sb.append("\n");
-
         String customer = sale.getCustomerName() != null ? sale.getCustomerName() : "Umum";
-        sb.append(pair("Pelanggan", ": " + customer));
+
+        sb.append(pair("Kasir", ": " + cashier, "Pelanggan", ": " + customer));
         sb.append("\n\n");
         sb.append(separator()).append("\n");
 
         // ==================================================
         // TABEL ITEM
         // ==================================================
-        // Header Tabel
-        sb.append("No  Kode        Nama Barang\n");
-        sb.append("    Harga   Qty  Diskon  Subtotal\n");
+        // Header Tabel (80 columns)
+        // No(3) | Kode(13) | Nama Barang(25) | Harga(11) | Qty(4) | Diskon(10) | Subtotal(14)
+        sb.append("No  Kode          Nama Barang               Harga       Qty Diskon     Subtotal\n");
         sb.append(separator()).append("\n");
 
-        // Items
-        // baris 1: 1 LPT-ASUS-01 ASUS VivoBook 14
-        // baris 2: 8.400.000 1 0 8.400.000
         int no = 1;
         for (SaleItem item : sale.getItems()) {
-            // Line 1: No + SKU + Name
             String noStr = padRight(String.valueOf(no), 3);
-            // Ambil SKU (coba pangkas jika terlalu panjang, 11 chars)
+
             String sku = item.getProductSku();
-            if (sku.length() > 11)
-                sku = sku.substring(0, 11);
-            else
-                sku = padRight(sku, 11);
+            if (sku.length() > 13) sku = sku.substring(0, 13);
+            sku = padRight(sku, 13);
 
             String name = item.getProductName();
-            // Sisa lebar untuk nama = 42 - 3 - 1 - 11 - 1 = 26 chars
-            // Tapi boleh wrap atau cut. Di spec "Nama barang boleh dipotong baris"
-            // Kita potong saja agar rapi 1 baris di line 1, atau biarkan panjang (wrap)
-            // Untuk kerapian dot matrix biasanya di-cut.
-            int maxName = WIDTH - 16;
-            if (name.length() > maxName)
-                name = name.substring(0, maxName);
+            if (name.length() > 25) name = name.substring(0, 25);
+            name = padRight(name, 25);
 
-            sb.append(noStr).append(" ").append(sku).append(" ").append(name).append("\n");
+            String price = padLeft(formatMoney(item.getUnitPrice()), 11);
+            String qty = padLeft(String.valueOf(item.getQuantity()), 4);
 
-            // Line 2: Prices
-            // Format: Harga Qty Diskon Subtotal
-            // Spec: Angka RATA KANAN
-            String price = formatMoney(item.getUnitPrice());
-            String qty = String.valueOf(item.getQuantity());
             String disc = formatMoney(item.getDiscountAmount());
-            // Jika item discount = 0, tampilkan 0
-            if (item.getDiscountAmount().compareTo(BigDecimal.ZERO) == 0)
-                disc = "0";
+            if (item.getDiscountAmount().compareTo(BigDecimal.ZERO) == 0) disc = "0";
+            disc = padLeft(disc, 10);
 
-            String subtotal = formatMoney(item.getSubtotal());
+            String subtotal = padLeft(formatMoney(item.getSubtotal()), 14);
 
-            // Build aligned string manually
-            // Layout target (approx):
-            // ....8.400.000..1....0....8.400.000
-            // Columns widths logic:
-            // Indent 4 (bawah "No ")
-            // Price: 11 chars (cukup utk puluhan juta)
-            // Qty: 4 chars
-            // Disc: 9 chars
-            // Subtotal: 13 chars (WIDTH - 4 - 11 - 4 - 9 = 14)
+            sb.append(noStr).append(" ").append(sku).append(" ").append(name).append(" ")
+              .append(price).append(" ").append(qty).append(" ").append(disc).append(subtotal).append("\n");
 
-            String sPrice = padLeft(price, 11);
-            String sQty = padLeft(qty, 4);
-            String sDisc = padLeft(disc, 9);
-            String sSub = padLeft(subtotal, 13); // sisa lebar
-
-            sb.append("    ").append(sPrice).append(sQty).append(sDisc).append(sSub).append("\n");
-
+            if (item.getSerialNumber() != null && !item.getSerialNumber().isBlank()) {
+                sb.append("    SN: ").append(item.getSerialNumber());
+                if (item.getBuyerName() != null && !item.getBuyerName().isBlank()) {
+                    sb.append(" | Pembeli: ").append(item.getBuyerName());
+                }
+                sb.append("\n");
+            }
+            if (item.getBonusProductName() != null && !item.getBonusProductName().isBlank()) {
+                sb.append("    Bonus: ").append(item.getBonusProductName()).append("\n");
+            }
+            if (item.getWarrantyLabel() != null && !item.getWarrantyLabel().isBlank()) {
+                sb.append("    Garansi: ").append(item.getWarrantyLabel()).append("\n");
+            }
             no++;
         }
         sb.append(separator()).append("\n");
@@ -118,55 +97,28 @@ public class ReceiptFormatter {
         // ==================================================
         // RINGKASAN PEMBAYARAN
         // ==================================================
-
-        // Total Harga & Diskon Global
-        sb.append(pair("Total Harga", ": " + formatMoney(sale.getSubtotal())));
-        sb.append("\n");
-        sb.append(pair("Diskon", ": " + formatMoney(sale.getDiscountAmount())));
-        sb.append("\n");
-        sb.append(separator()).append("\n");
-
-        sb.append(pair("TOTAL BAYAR", ": " + formatMoney(sale.getTotalAmount())));
-        sb.append("\n\n");
+        sb.append(padLeft("Total Harga : " + padLeft(formatMoney(sale.getSubtotal()), 14), WIDTH)).append("\n");
+        sb.append(padLeft("Diskon : " + padLeft(formatMoney(sale.getDiscountAmount()), 14), WIDTH)).append("\n");
+        sb.append(padLeft("TOTAL BAYAR : " + padLeft(formatMoney(sale.getTotalAmount()), 14), WIDTH)).append("\n\n");
 
         // Pembayaran
         if (sale.getPaymentType() == Sale.PaymentType.SPLIT && sale.getPayments() != null) {
             for (SalePayment p : sale.getPayments()) {
-                String label = p.getMethod();
-                if (label.contains("PAYLATER_"))
-                    label = label.replace("PAYLATER_", "");
-                // Clean up enum names
-                if (label.equals("TRANSFER_BCA"))
-                    label = "Transfer BCA";
-                else if (label.equals("DEBIT_BRI"))
-                    label = "Debit BRI";
-                else if (label.equals("PENGADAAN_CV"))
-                    label = "Pengadaan";
-
-                sb.append(pair("Metode Bayar", ": " + label)).append("\n");
-                sb.append(pair("Bayar", ": " + formatMoney(p.getAmount()))).append("\n");
+                String label = p.getMethod().replace("PAYLATER_", "").replace("_", " ");
+                sb.append(padLeft("Bayar " + padRight(label, 12) + " : " + padLeft(formatMoney(p.getAmount()), 14), WIDTH)).append("\n");
             }
         } else {
-            String method = "CASH";
-            if (sale.getPaymentMethod() != null) {
-                method = sale.getPaymentMethod().getDisplayName();
-                // Fallback if displayName null
-                if (method == null)
-                    method = sale.getPaymentMethod().name();
-            }
-            sb.append(pair("Metode Bayar", ": " + method)).append("\n");
-            sb.append(pair("Tunai", ": " + formatMoney(sale.getPaymentAmount()))).append("\n");
+            String method = sale.getPaymentMethod() != null ? sale.getPaymentMethod().name().replace("_", " ") : "CASH";
+            sb.append(padLeft("Bayar " + padRight(method, 12) + " : " + padLeft(formatMoney(sale.getPaymentAmount()), 14), WIDTH)).append("\n");
         }
 
-        sb.append(pair("Kembali", ": " + formatMoney(sale.getChangeAmount())));
-        sb.append("\n\n");
+        sb.append(padLeft("Kembali : " + padLeft(formatMoney(sale.getChangeAmount()), 14), WIDTH)).append("\n\n");
         sb.append(separator()).append("\n");
 
         // ==================================================
         // FOOTER
         // ==================================================
-        sb.append(center("Barang yang sudah dibeli")).append("\n");
-        sb.append(center("tidak dapat dikembalikan / ditukar")).append("\n\n");
+        sb.append(center("Barang yang sudah dibeli tidak dapat dikembalikan / ditukar")).append("\n\n");
         sb.append(center("*** TERIMA KASIH ATAS KUNJUNGAN ANDA ***")).append("\n");
         sb.append(separator()).append("\n");
 
@@ -178,30 +130,21 @@ public class ReceiptFormatter {
     }
 
     private static String formatMoney(BigDecimal amount) {
-        if (amount == null)
-            return "0";
+        if (amount == null) return "0";
         return CURRENCY_FMT.format(amount);
     }
 
-    // Helper: Center text
     private static String center(String s) {
-        if (s.length() >= WIDTH)
-            return s;
+        if (s.length() >= WIDTH) return s;
         int padding = (WIDTH - s.length()) / 2;
         return " ".repeat(padding) + s;
     }
 
-    // Helper: Key-Value pair with alignment
-    // Key (left) ...... Value (right) -> No, user spec is "No Nota : INV..." (Left
-    // aligned keys)
-    // Looking at spec:
-    // No Nota : INV...
-    // Tanggal : DD...
-    // This is Fixed Width Columns for Key.
-    private static String pair(String key, String value) {
-        // Assume key width 12 chars
-        String k = padRight(key, 12);
-        return k + value;
+    // Helper: 2 columns Key-Value pairs
+    private static String pair(String k1, String v1, String k2, String v2) {
+        String left = padRight(k1, 10) + padRight(v1, 28);
+        String right = padRight(k2, 12) + v2;
+        return padRight(left + right, WIDTH);
     }
 
     // Helper: Pad Right (Text align Left)

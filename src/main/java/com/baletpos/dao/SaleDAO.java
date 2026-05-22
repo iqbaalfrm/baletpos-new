@@ -1,6 +1,7 @@
 package com.baletpos.dao;
 
 import com.baletpos.config.DatabaseConfig;
+import com.baletpos.config.DatabaseDialect;
 import com.baletpos.config.SqlDialect;
 import com.baletpos.model.*;
 import org.slf4j.Logger;
@@ -74,6 +75,8 @@ public class SaleDAO {
                 movement.setNotes("Sale " + invoiceNumber);
 
                 insertStockMovement(conn, movement);
+
+                processBonusStockOut(conn, item, saleId, sale.getCreatedBy(), invoiceNumber);
             }
 
             // 4. Insert Payments
@@ -168,6 +171,8 @@ public class SaleDAO {
                 movement.setNotes("VOID " + sale.getInvoiceNumber() + " - " + voidReason);
 
                 insertStockMovement(conn, movement);
+
+                restoreBonusStock(conn, item, saleId, voidedBy, sale.getInvoiceNumber(), voidReason);
             }
 
             conn.commit();
@@ -303,8 +308,8 @@ public class SaleDAO {
         // Handle null dates with wide default range
         LocalDate effectiveStart = (startDate != null) ? startDate : LocalDate.of(2000, 1, 1);
         LocalDate effectiveEnd = (endDate != null) ? endDate : LocalDate.of(2100, 12, 31);
-        String startStr = effectiveStart.atStartOfDay().toString(); // e.g. 2026-01-01T00:00
-        String endStr = effectiveEnd.plusDays(1).atStartOfDay().toString(); // e.g. 2026-01-02T00:00
+        LocalDateTime start = effectiveStart.atStartOfDay();
+        LocalDateTime end = effectiveEnd.plusDays(1).atStartOfDay();
 
         String sql = "SELECT s.*, u.full_name as created_by_name, c.name as customer_name " +
                 "FROM sales s " +
@@ -317,8 +322,7 @@ public class SaleDAO {
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, startStr);
-            pstmt.setString(2, endStr);
+            setDateTimeRange(pstmt, 1, 2, start, end);
             String q = (query == null) ? "" : query;
             String qLike = "%" + q + "%";
             pstmt.setString(3, q);
@@ -342,8 +346,8 @@ public class SaleDAO {
         // Handle null dates with wide default range
         LocalDate effectiveStart = (startDate != null) ? startDate : LocalDate.of(2000, 1, 1);
         LocalDate effectiveEnd = (endDate != null) ? endDate : LocalDate.of(2100, 12, 31);
-        String startStr = effectiveStart.atStartOfDay().toString();
-        String endStr = effectiveEnd.plusDays(1).atStartOfDay().toString();
+        LocalDateTime start = effectiveStart.atStartOfDay();
+        LocalDateTime end = effectiveEnd.plusDays(1).atStartOfDay();
 
         String sql = "SELECT COUNT(*) FROM sales s " +
                 "LEFT JOIN customers c ON s.customer_id = c.id " +
@@ -353,8 +357,7 @@ public class SaleDAO {
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, startStr);
-            pstmt.setString(2, endStr);
+            setDateTimeRange(pstmt, 1, 2, start, end);
             String q = (query == null) ? "" : query;
             String qLike = "%" + q + "%";
             pstmt.setString(3, q);
@@ -374,8 +377,8 @@ public class SaleDAO {
     public BigDecimal sumSales(LocalDate startDate, LocalDate endDate, String query) {
         LocalDate effectiveStart = (startDate != null) ? startDate : LocalDate.of(2000, 1, 1);
         LocalDate effectiveEnd = (endDate != null) ? endDate : LocalDate.of(2100, 12, 31);
-        String startStr = effectiveStart.atStartOfDay().toString();
-        String endStr = effectiveEnd.plusDays(1).atStartOfDay().toString();
+        LocalDateTime start = effectiveStart.atStartOfDay();
+        LocalDateTime end = effectiveEnd.plusDays(1).atStartOfDay();
 
         String sql = "SELECT COALESCE(SUM(total_amount), 0) as total FROM sales s " +
                 "LEFT JOIN customers c ON s.customer_id = c.id " +
@@ -386,8 +389,7 @@ public class SaleDAO {
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, startStr);
-            pstmt.setString(2, endStr);
+            setDateTimeRange(pstmt, 1, 2, start, end);
             String q = (query == null) ? "" : query;
             String qLike = "%" + q + "%";
             pstmt.setString(3, q);
@@ -455,6 +457,9 @@ public class SaleDAO {
                     item.setSerialNumber(rs.getString("serial_number"));
                     item.setBuyerName(rs.getString("buyer_name"));
                     item.setBuyerNik(rs.getString("buyer_nik"));
+                    item.setBonusProductId(getNullableLong(rs, "bonus_product_id"));
+                    item.setBonusProductName(rs.getString("bonus_product_name"));
+                    item.setWarrantyLabel(rs.getString("warranty_label"));
 
                     items.add(item);
                 }
@@ -502,7 +507,7 @@ public class SaleDAO {
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, sale.getInvoiceNumber());
             pstmt.setObject(2, sale.getCustomerId());
-            pstmt.setString(3, sale.getSaleDate().toString());
+            pstmt.setString(3, sale.getSaleDate().format(DB_DATE_FMT));
             pstmt.setInt(4, sale.getSubtotal().intValue());
             pstmt.setDouble(5, sale.getDiscountPercent());
             pstmt.setInt(6, sale.getDiscountAmount().intValue());
@@ -539,8 +544,9 @@ public class SaleDAO {
 
     private void insertSaleItem(Connection conn, SaleItem item) throws SQLException {
         String sql = "INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, hpp_per_unit, " +
-                "discount_percent, discount_amount, subtotal, serial_number, buyer_name, buyer_nik) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "discount_percent, discount_amount, subtotal, serial_number, buyer_name, buyer_nik, " +
+                "bonus_product_id, bonus_product_name, warranty_label) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, item.getSaleId());
@@ -550,14 +556,83 @@ public class SaleDAO {
             pstmt.setInt(5, item.getHppPerUnit().intValue());
             pstmt.setDouble(6, item.getDiscountPercent());
             pstmt.setInt(7, item.getDiscountAmount().intValue());
-            pstmt.setInt(7, item.getDiscountAmount().intValue());
             pstmt.setInt(8, item.getSubtotal().intValue());
             pstmt.setString(9, item.getSerialNumber());
             pstmt.setString(10, item.getBuyerName());
             pstmt.setString(11, item.getBuyerNik());
+            pstmt.setObject(12, item.getBonusProductId());
+            pstmt.setString(13, item.getBonusProductName());
+            pstmt.setString(14, item.getWarrantyLabel());
 
             pstmt.executeUpdate();
         }
+    }
+
+    private void processBonusStockOut(Connection conn, SaleItem item, long saleId, Long createdBy, String invoiceNumber)
+            throws SQLException {
+        if (item.getBonusProductId() == null) {
+            return;
+        }
+
+        int currentStock = getProductStock(conn, item.getBonusProductId());
+        int quantity = item.getQuantity() == null ? 1 : item.getQuantity();
+        if (currentStock < quantity) {
+            throw new SQLException("Stok bonus tidak mencukupi untuk produk: " + item.getBonusProductName());
+        }
+
+        updateProductStock(conn, item.getBonusProductId(), -quantity);
+
+        StockMovement movement = new StockMovement();
+        movement.setProductId(item.getBonusProductId());
+        movement.setMovementType(StockMovement.MovementType.SALE_OUT);
+        movement.setReferenceType("SALE_BONUS");
+        movement.setReferenceId(saleId);
+        movement.setQuantityChange(-quantity);
+        movement.setStockBefore(currentStock);
+        movement.setStockAfter(currentStock - quantity);
+        movement.setCreatedBy(createdBy);
+        movement.setNotes("Bonus " + invoiceNumber + " untuk " + item.getProductName());
+        insertStockMovement(conn, movement);
+    }
+
+    private void restoreBonusStock(Connection conn, SaleItem item, long saleId, Long voidedBy, String invoiceNumber,
+            String voidReason) throws SQLException {
+        if (item.getBonusProductId() == null) {
+            return;
+        }
+
+        int currentStock = getProductStock(conn, item.getBonusProductId());
+        int quantity = item.getQuantity() == null ? 1 : item.getQuantity();
+        updateProductStock(conn, item.getBonusProductId(), quantity);
+
+        StockMovement movement = new StockMovement();
+        movement.setProductId(item.getBonusProductId());
+        movement.setMovementType(StockMovement.MovementType.VOID_RESTORE);
+        movement.setReferenceType("SALE_BONUS_VOID");
+        movement.setReferenceId(saleId);
+        movement.setQuantityChange(quantity);
+        movement.setStockBefore(currentStock);
+        movement.setStockAfter(currentStock + quantity);
+        movement.setCreatedBy(voidedBy);
+        movement.setNotes("VOID bonus " + invoiceNumber + " - " + voidReason);
+        insertStockMovement(conn, movement);
+    }
+
+    private Long getNullableLong(ResultSet rs, String columnName) throws SQLException {
+        long value = rs.getLong(columnName);
+        return rs.wasNull() ? null : value;
+    }
+
+    private void setDateTimeRange(PreparedStatement pstmt, int startIndex, int endIndex,
+            LocalDateTime start, LocalDateTime end) throws SQLException {
+        if (DatabaseConfig.getDialect() == DatabaseDialect.POSTGRES) {
+            pstmt.setTimestamp(startIndex, Timestamp.valueOf(start));
+            pstmt.setTimestamp(endIndex, Timestamp.valueOf(end));
+            return;
+        }
+
+        pstmt.setString(startIndex, start.format(DB_DATE_FMT));
+        pstmt.setString(endIndex, end.format(DB_DATE_FMT));
     }
 
     private int getProductStock(Connection conn, Long productId) throws SQLException {

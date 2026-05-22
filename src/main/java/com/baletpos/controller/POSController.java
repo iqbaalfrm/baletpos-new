@@ -20,6 +20,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
+import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -305,8 +306,8 @@ public class POSController {
         ToggleButton btn = new ToggleButton(text);
         btn.setToggleGroup(group);
         btn.setSelected(selected);
-        String selectedStyle = "-fx-background-color: #17212f; -fx-text-fill: white; -fx-font-weight: 800; -fx-background-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;";
-        String normalStyle = "-fx-background-color: white; -fx-text-fill: #334155; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 14; -fx-cursor: hand; -fx-font-weight: 700;";
+        String selectedStyle = "-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-weight: 900; -fx-border-color: #93c5fd; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 9 15; -fx-cursor: hand;";
+        String normalStyle = "-fx-background-color: white; -fx-text-fill: #334155; -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 9 15; -fx-cursor: hand; -fx-font-weight: 800;";
         btn.setStyle(selected ? selectedStyle : normalStyle);
 
         btn.selectedProperty().addListener((obs, was, is) -> {
@@ -382,16 +383,16 @@ public class POSController {
     }
 
     private VBox createProductCard(Product p) {
-        VBox card = new VBox(8);
+        VBox card = new VBox(10);
         card.getStyleClass().add("product-card");
-        String baseStyle = "-fx-background-color: white; -fx-border-color: #dce3ea; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-pref-width: 200; -fx-min-height: 162; -fx-cursor: hand;";
-        String hoverStyle = "-fx-background-color: #f8fbff; -fx-border-color: #2563eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-pref-width: 200; -fx-min-height: 162; -fx-cursor: hand;";
+        String baseStyle = "-fx-background-color: white; -fx-border-color: #dce3ea; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 14; -fx-pref-width: 200; -fx-min-height: 176; -fx-cursor: hand;";
+        String hoverStyle = "-fx-background-color: #f8fbff; -fx-border-color: #2563eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 14; -fx-pref-width: 200; -fx-min-height: 176; -fx-cursor: hand;";
         card.setStyle(baseStyle);
         card.setMaxWidth(Double.MAX_VALUE);
 
         // 1. Info Section
         Label nameLbl = new Label(p.getName());
-        nameLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #1e293b;");
+        nameLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: 800; -fx-text-fill: #1e293b;");
         nameLbl.setWrapText(true);
         nameLbl.setMinHeight(40);
         nameLbl.setMaxHeight(40);
@@ -491,21 +492,21 @@ public class POSController {
     }
 
     private Node createCartItemRow(SaleItem item) {
-        VBox container = new VBox(4);
+        VBox container = new VBox(8);
         container.setStyle(
-                "-fx-background-color: white; -fx-padding: 11 12; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;");
+                "-fx-background-color: white; -fx-padding: 14 14; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;");
 
-        HBox topRow = new HBox(8);
+        HBox topRow = new HBox(10);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox info = new VBox(1);
+        VBox info = new VBox(3);
         Label name = new Label(item.getProductName());
-        name.setStyle("-fx-font-weight: 600; -fx-text-fill: #1e293b; -fx-font-size: 12px;");
+        name.setStyle("-fx-font-weight: 800; -fx-text-fill: #1e293b; -fx-font-size: 12px;");
         name.setWrapText(true);
         name.setMaxWidth(180);
 
         Label price = new Label("@ " + currencyFormat.format(item.getUnitPrice()));
-        price.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
+        price.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
         info.getChildren().addAll(name, price);
         HBox.setHgrow(info, Priority.ALWAYS);
 
@@ -531,13 +532,13 @@ public class POSController {
         });
         topRow.getChildren().addAll(info, remove);
 
-        HBox bottomRow = new HBox(8);
+        HBox bottomRow = new HBox(10);
         bottomRow.setAlignment(Pos.CENTER_LEFT);
 
         // Compact Stepper
         HBox stepper = new HBox(0);
         stepper.setAlignment(Pos.CENTER);
-        stepper.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 4;");
+        stepper.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 6; -fx-border-color: #e2e8f0; -fx-border-radius: 6;");
 
         Button minus = new Button("-");
         String minusBtnNormal = "-fx-background-color: rgba(100,116,139,0.1); -fx-cursor: hand; -fx-padding: 4 10; " +
@@ -574,39 +575,116 @@ public class POSController {
 
         container.getChildren().addAll(topRow, bottomRow);
 
-        // Extra fields for Laptop: SN, NIK, Nama (Compact)
+        // Extra fields for Laptop: SN and buyer name.
         boolean isLaptop = item.getProductType() == Product.ProductType.LAPTOP_NEW
                 || item.getProductType() == Product.ProductType.LAPTOP_SECOND;
         if (isLaptop) {
-            VBox laptopFields = new VBox(4);
+            VBox laptopFields = new VBox(8);
             laptopFields.setStyle(
-                    "-fx-background-color: #f8fafc; -fx-padding: 8; -fx-background-radius: 6; -fx-border-color: #cbd5e1; -fx-border-radius: 6;");
+                    "-fx-background-color: #f8fafc; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #dbeafe; -fx-border-radius: 8;");
 
-            Label lblInfo = new Label("Data Pembeli Laptop (Wajib)");
+            Label lblInfo = new Label("Detail Laptop");
             lblInfo.setStyle("-fx-font-size: 10px; -fx-font-weight: 800; -fx-text-fill: #334155;");
 
             TextField snInput = new TextField(item.getSerialNumber());
             snInput.setPromptText("Serial Number");
             snInput.setStyle(
-                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-radius: 3; -fx-padding: 4;");
+                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 6 8;");
             snInput.textProperty().addListener((obs, o, n) -> item.setSerialNumber(n));
-
-            TextField nikInput = new TextField(item.getBuyerNik());
-            nikInput.setPromptText("NIK Pembeli");
-            nikInput.setStyle(
-                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-radius: 3; -fx-padding: 4;");
-            nikInput.textProperty().addListener((obs, o, n) -> item.setBuyerNik(n));
 
             TextField namaInput = new TextField(item.getBuyerName());
             namaInput.setPromptText("Nama Pembeli");
             namaInput.setStyle(
-                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-radius: 3; -fx-padding: 4;");
+                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 6 8;");
             namaInput.textProperty().addListener((obs, o, n) -> item.setBuyerName(n));
 
-            laptopFields.getChildren().addAll(lblInfo, snInput, nikInput, namaInput);
+            ComboBox<Product> bonusCombo = new ComboBox<>();
+            bonusCombo.setPromptText("Bonus peripheral");
+            bonusCombo.setMaxWidth(Double.MAX_VALUE);
+            bonusCombo.setItems(FXCollections.observableArrayList(getAvailableBonusProducts()));
+            bonusCombo.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(Product product) {
+                    if (product == null) {
+                        return "";
+                    }
+                    return product.getName() + " (" + product.getStock() + " stok)";
+                }
+
+                @Override
+                public Product fromString(String string) {
+                    return null;
+                }
+            });
+            bonusCombo.getSelectionModel().select(findSelectedBonus(item));
+            bonusCombo.valueProperty().addListener((obs, oldProduct, selectedProduct) -> {
+                if (selectedProduct == null) {
+                    item.setBonusProductId(null);
+                    item.setBonusProductName(null);
+                } else {
+                    item.setBonusProductId(selectedProduct.getId());
+                    item.setBonusProductName(selectedProduct.getName());
+                }
+            });
+            bonusCombo.setStyle(
+                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+            ComboBox<String> warrantyCombo = new ComboBox<>();
+            warrantyCombo.setPromptText("Garansi");
+            warrantyCombo.setMaxWidth(Double.MAX_VALUE);
+            warrantyCombo.setItems(FXCollections.observableArrayList("2 Minggu", "1 Tahun", "2 Tahun"));
+            warrantyCombo.getSelectionModel().select(item.getWarrantyLabel());
+            warrantyCombo.valueProperty().addListener((obs, oldWarranty, selectedWarranty) -> item.setWarrantyLabel(selectedWarranty));
+            warrantyCombo.setStyle(
+                    "-fx-font-size: 11px; -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+            GridPane laptopGrid = new GridPane();
+            laptopGrid.setHgap(8);
+            laptopGrid.setVgap(8);
+            ColumnConstraints leftColumn = new ColumnConstraints();
+            leftColumn.setPercentWidth(50);
+            ColumnConstraints rightColumn = new ColumnConstraints();
+            rightColumn.setPercentWidth(50);
+            laptopGrid.getColumnConstraints().addAll(leftColumn, rightColumn);
+
+            laptopGrid.add(createCartField("Serial Number", snInput), 0, 0);
+            laptopGrid.add(createCartField("Nama Pembeli", namaInput), 1, 0);
+            laptopGrid.add(createCartField("Bonus dari Peripheral", bonusCombo), 0, 1);
+            laptopGrid.add(createCartField("Garansi", warrantyCombo), 1, 1);
+
+            laptopFields.getChildren().addAll(lblInfo, laptopGrid);
             container.getChildren().add(laptopFields);
         }
         return container;
+    }
+
+    private VBox createCartField(String labelText, Control input) {
+        VBox field = new VBox(3);
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-size: 10px; -fx-font-weight: 700; -fx-text-fill: #64748b;");
+        input.setMaxWidth(Double.MAX_VALUE);
+        field.getChildren().addAll(label, input);
+        return field;
+    }
+
+    private List<Product> getAvailableBonusProducts() {
+        if (allProductsHelper == null) {
+            return List.of();
+        }
+        return allProductsHelper.stream()
+                .filter(product -> product.getProductType() == Product.ProductType.PERIPHERAL)
+                .filter(product -> product.getStock() > 0)
+                .collect(Collectors.toList());
+    }
+
+    private Product findSelectedBonus(SaleItem item) {
+        if (item.getBonusProductId() == null || allProductsHelper == null) {
+            return null;
+        }
+        return allProductsHelper.stream()
+                .filter(product -> item.getBonusProductId().equals(product.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     private void increaseQty(SaleItem item) {
@@ -809,12 +887,12 @@ public class POSController {
                         showAlert("Serial number wajib diisi untuk: " + item.getProductName());
                         return;
                     }
-                    if (item.getBuyerNik() == null || item.getBuyerNik().isBlank()) {
-                        showAlert("NIK pembeli wajib diisi untuk: " + item.getProductName());
-                        return;
-                    }
                     if (item.getBuyerName() == null || item.getBuyerName().isBlank()) {
                         showAlert("Nama pembeli wajib diisi untuk: " + item.getProductName());
+                        return;
+                    }
+                    if (item.getWarrantyLabel() == null || item.getWarrantyLabel().isBlank()) {
+                        showAlert("Garansi wajib dipilih untuk: " + item.getProductName());
                         return;
                     }
                 }
@@ -983,7 +1061,7 @@ public class POSController {
         int colorIndex = (Math.abs(name.hashCode()) % 7) + 1;
         avatarPane.getStyleClass().clear();
         avatarPane.getStyleClass().add("avatar-circle");
-        avatarPane.getStyleClass().add("avatar-bg-" + colorIndex); // Pastel gradients
+        avatarPane.getStyleClass().add("avatar-bg-" + colorIndex);
         avatarPane.setStyle("-fx-background-radius: 50;");
 
         avatarPane.getChildren().add(initialsLabel);

@@ -50,9 +50,7 @@ textarea {
   min-height: 100vh;
   place-items: center;
   padding: 24px;
-  background:
-    linear-gradient(135deg, rgba(220, 225, 255, 0.7), rgba(246, 250, 254, 0.95)),
-    var(--surface);
+  background: var(--surface);
 }
 
 .login-card {
@@ -579,6 +577,14 @@ button {
   overflow-x: auto;
 }
 
+.empty-state {
+  padding: 28px 16px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -807,5 +813,497 @@ td {
   .table-tools input {
     min-width: 0;
     min-height: 38px;
+  }
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .sidebar, .topbar, .table-tools, button {
+    display: none !important;
+  }
+  .app-shell {
+    display: block !important;
+  }
+  .workspace {
+    padding: 0 !important;
+  }
+  .panel, .metric-card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 15px;
+  }
+  .metric-card {
+    border: none !important;
+    border-bottom: 1px solid #000 !important;
+    border-radius: 0 !important;
+  }
+  .summary-grid, .stock-summary {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  .summary-grid > *, .stock-summary > * {
+    flex: 1 1 20% !important;
+  }
+  .content-grid {
+    display: block !important;
+  }
+  table, th, td {
+    border: 1px solid #000 !important;
+  }
+  th {
+    background: #eaeaea !important;
+    color: #000 !important;
+  }
+  .badge {
+    border: 1px solid #000 !important;
+    background: transparent !important;
+    color: #000 !important;
+  }
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+}
+
+/* 2026 Trial Polish: clean finance console, flat color */
+:root {
+  --primary: #1d4ed8;
+  --primary-strong: #1e40af;
+  --primary-soft: #dbeafe;
+  --accent: #0f766e;
+  --accent-soft: #ccfbf1;
+  --surface: #f5f7fb;
+  --surface-low: #ffffff;
+  --surface-mid: #eef2f7;
+  --border: #d8e1ec;
+  --text: #111827;
+  --muted: #64748b;
+  --good: #0f766e;
+  --good-bg: #dcfce7;
+  --warn: #92400e;
+  --warn-bg: #fef3c7;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+}
+
+body {
+  background: var(--surface);
+  letter-spacing: 0;
+}
+
+.login-screen {
+  background: var(--surface);
+}
+
+.login-card {
+  gap: 18px;
+  width: min(440px, 100%);
+  border-color: var(--border);
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.login-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+}
+
+.login-card h1 {
+  color: var(--primary);
+  font-size: 25px;
+  letter-spacing: 0;
+}
+
+.login-card input,
+select,
+input,
+textarea {
+  min-height: 40px;
+  border-color: var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+  outline: 0;
+}
+
+.app-shell {
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: #ffffff;
+  border-right-color: var(--border);
+  padding: 22px 10px 16px;
+}
+
+.brand {
+  padding: 0 14px 22px;
+}
+
+.brand-logo {
+  border-radius: 9px;
+}
+
+.brand h1 {
+  color: var(--primary);
+}
+
+.nav {
+  gap: 4px;
+}
+
+.nav a {
+  min-height: 42px;
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: #334155;
+}
+
+.nav a span {
+  min-width: 24px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.nav a:hover {
+  background: #eff6ff;
+  color: var(--primary);
+}
+
+.nav a.active {
+  border-left-color: #3b82f6;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.sidebar-footer {
+  border-top-color: var(--border);
+}
+
+.logout-btn {
+  border-color: #fecaca;
+  background: #fff;
+  color: var(--danger);
+}
+
+.workspace {
+  padding: 0 28px 32px;
+}
+
+.topbar {
+  min-height: 76px;
+  border-bottom-color: var(--border);
+  background: rgba(245, 247, 251, 0.96);
+}
+
+.topbar h2 {
+  color: var(--primary);
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.topbar-actions {
+  gap: 12px;
+}
+
+.search-box {
+  height: 42px;
+  min-width: 330px;
+  border-color: var(--border);
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+button,
+.primary-btn,
+.secondary-btn {
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+.primary-btn {
+  background: var(--primary);
+}
+
+.primary-btn:hover {
+  background: var(--primary-strong);
+}
+
+.secondary-btn {
+  border-color: var(--border);
+  color: var(--primary);
+}
+
+.connection-status {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+}
+
+.summary-grid,
+.stock-summary {
+  gap: 18px;
+  margin: 26px 0 22px;
+}
+
+.content-grid {
+  gap: 20px;
+}
+
+.metric-card,
+.panel {
+  border-color: var(--border);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.metric-card {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+}
+
+.metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--primary);
+}
+
+.metric-card:nth-child(2)::before {
+  background: var(--accent);
+}
+
+.metric-card:nth-child(3)::before {
+  background: #f59e0b;
+}
+
+.metric-card:nth-child(4)::before {
+  background: #7c3aed;
+}
+
+.metric-card p {
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.metric-card strong {
+  color: var(--primary);
+  font-size: 25px;
+}
+
+.panel {
+  overflow: hidden;
+}
+
+.panel-head {
+  border-bottom-color: var(--border);
+  background: #f8fafc;
+  padding: 16px 18px;
+}
+
+.panel-head h3 {
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.panel-head p {
+  color: var(--muted);
+}
+
+.bar-chart {
+  gap: 14px;
+  height: 310px;
+  padding: 26px 20px 18px;
+}
+
+.bars {
+  gap: 7px;
+}
+
+.bar {
+  border-radius: 6px 6px 0 0;
+}
+
+.bar.revenue {
+  background: #bfdbfe;
+  border-top-color: var(--primary);
+}
+
+.bar.profit {
+  background: #99f6e4;
+  border-top-color: var(--accent);
+}
+
+.profit-dot {
+  background: var(--accent);
+}
+
+.payment-item,
+.approval-item,
+.statement-row {
+  gap: 10px;
+  border-bottom-color: #edf2f7;
+  padding: 16px 18px;
+}
+
+.payment-track {
+  height: 8px;
+  background: #e2e8f0;
+}
+
+.payment-track i {
+  background: var(--primary);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  min-width: 760px;
+}
+
+th,
+td {
+  border-bottom-color: #edf2f7;
+  padding: 14px 16px;
+}
+
+th {
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+tbody tr:hover {
+  background: #eff6ff;
+}
+
+td {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.statement-row.total {
+  background: #eff6ff;
+}
+
+.table-tools {
+  gap: 12px;
+  border-bottom-color: var(--border);
+  padding: 14px 18px;
+}
+
+.table-tools input,
+.table-tools select {
+  min-height: 40px;
+}
+
+.stock-form,
+.reconcile-form {
+  gap: 16px;
+  padding: 18px;
+}
+
+.stock-form label,
+.reconcile-form label {
+  gap: 8px;
+}
+
+.stock-alerts {
+  gap: 10px;
+  border-top-color: var(--border);
+  padding: 16px 18px;
+}
+
+.stock-alert {
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: var(--warn-bg);
+  padding: 12px;
+}
+
+.result-panel {
+  min-height: 280px;
+  padding: 28px;
+}
+
+.empty-state {
+  padding: 32px 18px;
+}
+
+.empty-table-cell {
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+  padding: 30px 16px;
+}
+
+@media (max-width: 1100px) {
+  .workspace {
+    padding: 0 18px 24px;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 16px 0;
+  }
+
+  .topbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    min-width: min(100%, 420px);
+  }
+}
+
+@media (max-width: 760px) {
+  .login-card {
+    padding: 24px;
+  }
+
+  .nav a {
+    min-height: 44px;
+  }
+
+  .metric-card strong {
+    font-size: 23px;
+  }
+
+  th,
+  td {
+    padding: 12px 14px;
   }
 }

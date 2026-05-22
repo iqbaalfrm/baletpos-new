@@ -99,6 +99,7 @@ public class ProductController {
     private final ProductDAO productDAO = new ProductDAO();
     private final ObservableList<Product> products = FXCollections.observableArrayList();
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID"));
+    private boolean canManageProducts;
 
     // Pagination
     private PaginationControl pagination;
@@ -296,6 +297,10 @@ public class ProductController {
                 if (empty) {
                     setGraphic(null);
                 } else {
+                    if (!canManageProducts) {
+                        setGraphic(null);
+                        return;
+                    }
                     setGraphic(box);
                     // Smart Visibility: Show on Row Hover or Row Selection
                     TableRow<Product> row = getTableRow();
@@ -567,9 +572,8 @@ public class ProductController {
     }
 
     private void setupPermissions() {
-        User currentUser = Session.getInstance().getCurrentUser();
-        boolean isAdmin = currentUser != null && currentUser.getRole() == User.Role.ADMIN;
-        addButton.setDisable(!isAdmin);
+        canManageProducts = Session.getInstance().canManageStore();
+        addButton.setDisable(!canManageProducts);
     }
 
     private void setupSelectionListener() {
@@ -582,6 +586,10 @@ public class ProductController {
 
     @FXML
     private void handleAdd() {
+        if (!canManageProducts) {
+            NotificationUtil.warning("Akses Ditolak", "Hanya Admin Toko yang dapat menambah produk.");
+            return;
+        }
         try {
             showProductDialog(null);
         } catch (Exception e) {
@@ -591,6 +599,10 @@ public class ProductController {
 
     @FXML
     private void handleEdit() {
+        if (!canManageProducts) {
+            NotificationUtil.warning("Akses Ditolak", "Hanya Admin Toko yang dapat mengubah produk.");
+            return;
+        }
         Product selected = productTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             showProductDialog(selected);
@@ -603,6 +615,11 @@ public class ProductController {
     private void confirmAndDelete(Product product) {
         if (product == null)
             return;
+
+        if (!canManageProducts) {
+            NotificationUtil.warning("Akses Ditolak", "Hanya Admin Toko yang dapat menghapus produk.");
+            return;
+        }
 
         try {
             // Security Check
@@ -642,8 +659,8 @@ public class ProductController {
 
     @FXML
     private void handleImport() {
-        if (!Session.getInstance().isAdmin()) {
-            NotificationUtil.warning("Akses Ditolak", "Hanya Admin yang dapat import data.");
+        if (!Session.getInstance().canManageStore()) {
+            NotificationUtil.warning("Akses Ditolak", "Hanya Admin Toko yang dapat import data.");
             return;
         }
 

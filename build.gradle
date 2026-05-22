@@ -59,6 +59,11 @@ dependencies {
     
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 application {
@@ -105,11 +110,6 @@ tasks.named('clean', Delete) {
         ant.delete(dir: "${projectDir}/bin", failonerror: false)
         ant.delete(dir: "${projectDir}/out", failonerror: false)
     }
-}
-
-// Force clean before build to avoid stale outputs
-tasks.named('build') {
-    dependsOn 'clean'
 }
 
 task generateTemplate(type: JavaExec) {

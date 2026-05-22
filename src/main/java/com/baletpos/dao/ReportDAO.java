@@ -1,6 +1,7 @@
 package com.baletpos.dao;
 
 import com.baletpos.config.DatabaseConfig;
+import com.baletpos.config.DatabaseDialect;
 import com.baletpos.config.SqlDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,8 +97,8 @@ public class ReportDAO {
     }
 
     public List<ReportRow> getSalesReportByProductType(LocalDate startDate, LocalDate endDate, String productType) {
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
 
         List<ReportRow> rows = new ArrayList<>();
         String sql = "SELECT " +
@@ -117,8 +120,7 @@ public class ReportDAO {
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, productType);
-            pstmt.setString(2, start);
-            pstmt.setString(3, end);
+            setDateTimeRange(pstmt, 2, 3, start, end);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -271,25 +273,14 @@ public class ReportDAO {
 
     private BigDecimal getGrossSalesRevenue(Connection conn, LocalDate startDate, LocalDate endDate)
             throws SQLException {
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
-
-        // Debug Log
-        try (PreparedStatement check = conn
-                .prepareStatement("SELECT count(*) FROM sales WHERE sale_date BETWEEN ? AND ?")) {
-            check.setString(1, start);
-            check.setString(2, end);
-            ResultSet rs = check.executeQuery();
-            if (rs.next())
-                logger.info("DEBUG: Found {} sales between {} and {}", rs.getInt(1), start, end);
-        }
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
 
         String sql = "SELECT COALESCE(SUM(total_amount), 0) as total " +
                 "FROM sales WHERE status = 'COMPLETED' AND sale_date BETWEEN ? AND ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, start);
-            pstmt.setString(2, end);
+            setDateTimeRange(pstmt, 1, 2, start, end);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -302,14 +293,13 @@ public class ReportDAO {
 
     private BigDecimal getSalesReturnValue(Connection conn, LocalDate startDate, LocalDate endDate)
             throws SQLException {
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
         String sql = "SELECT COALESCE(SUM(total_amount), 0) as total " +
                 "FROM sales_returns WHERE status = 'COMPLETED' AND return_date BETWEEN ? AND ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, start);
-            pstmt.setString(2, end);
+            setDateTimeRange(pstmt, 1, 2, start, end);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -321,16 +311,15 @@ public class ReportDAO {
     }
 
     private BigDecimal getGrossCogs(Connection conn, LocalDate startDate, LocalDate endDate) throws SQLException {
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
         String sql = "SELECT COALESCE(SUM(si.quantity * si.hpp_per_unit), 0) as total " +
                 "FROM sale_items si " +
                 "INNER JOIN sales s ON si.sale_id = s.id " +
                 "WHERE s.status = 'COMPLETED' AND s.sale_date BETWEEN ? AND ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, start);
-            pstmt.setString(2, end);
+            setDateTimeRange(pstmt, 1, 2, start, end);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -342,16 +331,15 @@ public class ReportDAO {
     }
 
     private BigDecimal getSalesReturnCogs(Connection conn, LocalDate startDate, LocalDate endDate) throws SQLException {
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
         String sql = "SELECT COALESCE(SUM(sri.quantity * sri.hpp_per_unit), 0) as total " +
                 "FROM sales_return_items sri " +
                 "INNER JOIN sales_returns sr ON sri.sales_return_id = sr.id " +
                 "WHERE sr.status = 'COMPLETED' AND sr.return_date BETWEEN ? AND ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, start);
-            pstmt.setString(2, end);
+            setDateTimeRange(pstmt, 1, 2, start, end);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -363,14 +351,12 @@ public class ReportDAO {
     }
 
     private BigDecimal getTotalExpenses(Connection conn, LocalDate startDate, LocalDate endDate) throws SQLException {
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
         String sql = "SELECT COALESCE(SUM(amount), 0) as total " +
-                "FROM expenses WHERE expense_date BETWEEN ? AND ?";
+                "FROM expenses WHERE " + SqlDialect.dateExpression("expense_date") + " BETWEEN ? AND ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, start);
-            pstmt.setString(2, end);
+            pstmt.setString(1, startDate.toString());
+            pstmt.setString(2, endDate.toString());
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -386,8 +372,6 @@ public class ReportDAO {
     // ========================================
     public List<ReportRow> getExpenseReport(LocalDate startDate, LocalDate endDate) {
         List<ReportRow> rows = new ArrayList<>();
-        String start = startDate.toString() + " 00:00:00";
-        String end = endDate.toString() + " 23:59:59";
         String sql = "SELECT " +
                 "ec.code as expense_code, " +
                 "ec.name as expense_name, " +
@@ -395,15 +379,15 @@ public class ReportDAO {
                 "COUNT(e.id) as transaction_count " +
                 "FROM expenses e " +
                 "INNER JOIN expense_codes ec ON e.expense_code_id = ec.id " +
-                "WHERE e.expense_date BETWEEN ? AND ? " +
+                "WHERE " + SqlDialect.dateExpression("e.expense_date") + " BETWEEN ? AND ? " +
                 "GROUP BY ec.id, ec.code, ec.name " +
                 "ORDER BY total_amount DESC";
 
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, start);
-            pstmt.setString(2, end);
+            pstmt.setString(1, startDate.toString());
+            pstmt.setString(2, endDate.toString());
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -432,12 +416,11 @@ public class ReportDAO {
             String sqlTodaySales = "SELECT COUNT(*) as count, COALESCE(SUM(total_amount), 0) as total " +
                     "FROM sales WHERE status = 'COMPLETED' AND sale_date BETWEEN ? AND ?";
 
-            String todayStart = date.toString() + " 00:00:00";
-            String todayEnd = date.toString() + " 23:59:59";
+            LocalDateTime todayStart = date.atStartOfDay();
+            LocalDateTime todayEnd = date.atTime(23, 59, 59);
 
             try (PreparedStatement pstmt = conn.prepareStatement(sqlTodaySales)) {
-                pstmt.setString(1, todayStart);
-                pstmt.setString(2, todayEnd);
+                setDateTimeRange(pstmt, 1, 2, todayStart, todayEnd);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         summary.put("today_sales_count", rs.getInt("count"));
@@ -471,12 +454,11 @@ public class ReportDAO {
             String sqlMonthRevenue = "SELECT COALESCE(SUM(total_amount), 0) as total " +
                     "FROM sales WHERE status = 'COMPLETED' AND sale_date BETWEEN ? AND ?";
 
-            String monthStartStr = monthStart.toString() + " 00:00:00";
-            String monthEndStr = monthEnd.toString() + " 23:59:59";
+            LocalDateTime monthStartDateTime = monthStart.atStartOfDay();
+            LocalDateTime monthEndDateTime = monthEnd.atTime(23, 59, 59);
 
             try (PreparedStatement pstmt = conn.prepareStatement(sqlMonthRevenue)) {
-                pstmt.setString(1, monthStartStr);
-                pstmt.setString(2, monthEndStr);
+                setDateTimeRange(pstmt, 1, 2, monthStartDateTime, monthEndDateTime);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         summary.put("month_revenue", rs.getLong("total"));
@@ -539,6 +521,18 @@ public class ReportDAO {
             logger.error("Error getting stock movement report", e);
         }
         return rows;
+    }
+
+    private void setDateTimeRange(PreparedStatement pstmt, int startIndex, int endIndex,
+            LocalDateTime start, LocalDateTime end) throws SQLException {
+        if (DatabaseConfig.getDialect() == DatabaseDialect.POSTGRES) {
+            pstmt.setTimestamp(startIndex, Timestamp.valueOf(start));
+            pstmt.setTimestamp(endIndex, Timestamp.valueOf(end));
+            return;
+        }
+
+        pstmt.setString(startIndex, start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        pstmt.setString(endIndex, end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 }
 

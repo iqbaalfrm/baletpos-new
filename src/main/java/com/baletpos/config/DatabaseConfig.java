@@ -54,14 +54,7 @@ public class DatabaseConfig {
                             : "/sql/schema.sql");
                     executeScript(conn, "/sql/seed.sql");
 
-                    // Force reset admin password to ensure valid hash
-                    String adminHash = com.baletpos.util.PasswordUtil.hashPassword("admin123");
-                    try (PreparedStatement ps = conn
-                            .prepareStatement("UPDATE users SET password_hash = ? WHERE username = 'admin'")) {
-                        ps.setString(1, adminHash);
-                        ps.executeUpdate();
-                        logger.info("Admin password hash refreshed.");
-                    }
+                    ensureTrialUsers(conn);
 
                     dbInitialized = true;
                 } else {
@@ -69,6 +62,9 @@ public class DatabaseConfig {
                     if (DIALECT == DatabaseDialect.SQLITE) {
                         // Run migrations for existing SQLite database
                         runMigrations(conn);
+                    } else if (DIALECT == DatabaseDialect.POSTGRES) {
+                        migratePostgresUserRoles(conn);
+                        migratePostgresSaleItemFields(conn);
                     }
                 }
             }
@@ -77,55 +73,14 @@ public class DatabaseConfig {
                 logger.info("Database initialized successfully.");
             }
 
-            // Ensure default users exist (admin/kasir) with correct roles/passwords
-            try (Connection conn = getConnection();
-                    PreparedStatement checkAdmin = conn
-                            .prepareStatement("SELECT count(*) FROM users WHERE username = 'admin'");
-                    PreparedStatement checkKasir = conn
-                            .prepareStatement("SELECT count(*) FROM users WHERE username = 'kasir'")) {
-
-                // Admin
-                ResultSet rsAdmin = checkAdmin.executeQuery();
-                String adminHash = com.baletpos.util.PasswordUtil.hashPassword("admin123");
-                if (rsAdmin.next() && rsAdmin.getInt(1) == 0) {
-                    try (PreparedStatement insert = conn.prepareStatement(
-                            "INSERT INTO users (username, password_hash, full_name, role, is_active) VALUES ('admin', ?, 'Administrator', 'ADMIN', 1)")) {
-                        insert.setString(1, adminHash);
-                        insert.executeUpdate();
-                        logger.info("Seeded default admin user.");
-                    }
-                } else {
-                    try (PreparedStatement update = conn.prepareStatement(
-                            "UPDATE users SET password_hash = ?, role = 'ADMIN', is_active = 1 WHERE username = 'admin'")) {
-                        update.setString(1, adminHash);
-                        update.executeUpdate();
-                        logger.info("Admin user ensured.");
-                    }
-                }
-
-                // Kasir
-                ResultSet rsKasir = checkKasir.executeQuery();
-                String kasirHash = com.baletpos.util.PasswordUtil.hashPassword("kasir123");
-                if (rsKasir.next() && rsKasir.getInt(1) == 0) {
-                    try (PreparedStatement insert = conn.prepareStatement(
-                            "INSERT INTO users (username, password_hash, full_name, role, is_active) VALUES ('kasir', ?, 'Kasir Toko', 'KASIR', 1)")) {
-                        insert.setString(1, kasirHash);
-                        insert.executeUpdate();
-                        logger.info("Seeded default kasir user.");
-                    }
-                } else {
-                    try (PreparedStatement update = conn.prepareStatement(
-                            "UPDATE users SET password_hash = ?, role = 'KASIR', is_active = 1 WHERE username = 'kasir'")) {
-                        update.setString(1, kasirHash);
-                        update.executeUpdate();
-                        logger.info("Kasir user ensured.");
-                    }
-                }
+            // Ensure default trial users exist with correct roles/passwords
+            try (Connection conn = getConnection()) {
+                ensureTrialUsers(conn);
             } catch (Exception e) {
                 logger.error("Seed default users failed", e);
             }
 
-            if (DIALECT == DatabaseDialect.SQLITE) {
+            if (DIALECT == DatabaseDialect.SQLITE && isDemoDataEnabled()) {
                 // Check if we need to seed DEMO DATA (if no sales exist)
                 try (Connection conn = getConnection()) {
                     boolean hasSales = false;
@@ -146,6 +101,8 @@ public class DatabaseConfig {
                 } catch (Exception e) {
                     logger.error("Demo Data Seeding failed", e);
                 }
+            } else if (DIALECT == DatabaseDialect.SQLITE) {
+                logger.info("Demo data seeding disabled.");
             }
 
         } catch (Exception e) {
@@ -158,6 +115,8 @@ public class DatabaseConfig {
      * Run database migrations for existing databases
      */
     private static void runMigrations(Connection conn) {
+        migrateUserRoles(conn);
+
         // Migration 1: Add image_path column to products
         try {
             boolean hasImagePath = false;
@@ -284,12 +243,20 @@ public class DatabaseConfig {
                     stmt.execute("ALTER TABLE sale_items ADD COLUMN serial_number TEXT");
                     stmt.execute("ALTER TABLE sale_items ADD COLUMN buyer_name TEXT");
                     stmt.execute("ALTER TABLE sale_items ADD COLUMN buyer_nik TEXT");
+                    stmt.execute("ALTER TABLE sale_items ADD COLUMN bonus_product_id INTEGER");
+                    stmt.execute("ALTER TABLE sale_items ADD COLUMN bonus_product_name TEXT");
+                    stmt.execute("ALTER TABLE sale_items ADD COLUMN warranty_label TEXT");
                 }
                 logger.info("Migration 5 completed");
             }
         } catch (SQLException e) {
             logger.warn("Migration 5 failed: {}", e.getMessage());
         }
+
+        // Migration 7: Add laptop bonus and warranty fields to existing sale_items.
+        addColumnIfMissing(conn, "sale_items", "bonus_product_id", "INTEGER");
+        addColumnIfMissing(conn, "sale_items", "bonus_product_name", "TEXT");
+        addColumnIfMissing(conn, "sale_items", "warranty_label", "TEXT");
 
         // Migration 6: Fix sales table constraint (Remove restrictive CHECK)
         try {
@@ -533,6 +500,169 @@ public class DatabaseConfig {
         }
     }
 
+    private static void migrateUserRoles(Connection conn) {
+        try (Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'")) {
+            if (!rs.next()) {
+                return;
+            }
+
+            String sql = rs.getString(1);
+            boolean hasOldConstraint = sql != null && sql.contains("role IN ('ADMIN', 'KASIR')");
+            if (!hasOldConstraint) {
+                try (Statement update = conn.createStatement()) {
+                    update.execute("UPDATE users SET role = 'ADMIN_TOKO' WHERE role = 'ADMIN'");
+                }
+                return;
+            }
+
+            logger.info("Running migration: Replace legacy user role constraint");
+            conn.setAutoCommit(false);
+            try (Statement migrate = conn.createStatement()) {
+                migrate.execute("PRAGMA foreign_keys=OFF");
+                migrate.execute("PRAGMA legacy_alter_table=ON");
+                migrate.execute("ALTER TABLE users RENAME TO users_old_role_mig");
+                migrate.execute("""
+                        CREATE TABLE users (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            username TEXT NOT NULL UNIQUE,
+                            password_hash TEXT NOT NULL,
+                            full_name TEXT NOT NULL,
+                            role TEXT NOT NULL CHECK (role IN ('KASIR', 'ADMIN_TOKO', 'ADMIN_KEUANGAN')),
+                            is_active INTEGER NOT NULL DEFAULT 1,
+                            created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+                            updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+                        )
+                        """);
+                migrate.execute("""
+                        INSERT INTO users (id, username, password_hash, full_name, role, is_active, created_at, updated_at)
+                        SELECT id, username, password_hash, full_name,
+                            CASE WHEN role = 'ADMIN' THEN 'ADMIN_TOKO' ELSE role END,
+                            is_active, created_at, updated_at
+                        FROM users_old_role_mig
+                        """);
+                migrate.execute("DROP TABLE users_old_role_mig");
+                migrate.execute("PRAGMA legacy_alter_table=OFF");
+                migrate.execute("PRAGMA foreign_keys=ON");
+                conn.commit();
+                logger.info("User role constraint migration completed");
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            logger.warn("User role migration failed: {}", e.getMessage());
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException ignored) {
+            }
+        }
+    }
+
+    private static void migratePostgresUserRoles(Connection conn) {
+        try {
+            try (PreparedStatement findConstraint = conn.prepareStatement("""
+                    SELECT conname
+                    FROM pg_constraint
+                    WHERE conrelid = 'users'::regclass
+                      AND contype = 'c'
+                      AND pg_get_constraintdef(oid) LIKE '%ADMIN%'
+                    """);
+                    ResultSet rs = findConstraint.executeQuery()) {
+                while (rs.next()) {
+                    String constraintName = rs.getString("conname");
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS " + constraintName);
+                    }
+                }
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("UPDATE users SET role = 'ADMIN_TOKO' WHERE role = 'ADMIN'");
+                stmt.execute("""
+                        ALTER TABLE users
+                        ADD CONSTRAINT users_role_check
+                        CHECK (role IN ('KASIR', 'ADMIN_TOKO', 'ADMIN_KEUANGAN'))
+                        """);
+            }
+            logger.info("PostgreSQL user role migration completed");
+        } catch (SQLException e) {
+            logger.warn("PostgreSQL user role migration skipped/failed: {}", e.getMessage());
+        }
+    }
+
+    private static void migratePostgresSaleItemFields(Connection conn) {
+        addColumnIfMissing(conn, "sale_items", "bonus_product_id", "INTEGER REFERENCES products(id)");
+        addColumnIfMissing(conn, "sale_items", "bonus_product_name", "TEXT");
+        addColumnIfMissing(conn, "sale_items", "warranty_label", "TEXT");
+    }
+
+    private static void addColumnIfMissing(Connection conn, String tableName, String columnName, String definition) {
+        try (ResultSet rs = conn.getMetaData().getColumns(null, null, tableName, columnName)) {
+            if (rs.next()) {
+                return;
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition);
+            }
+            logger.info("Added column {}.{}", tableName, columnName);
+        } catch (SQLException e) {
+            logger.warn("Add column {}.{} skipped/failed: {}", tableName, columnName, e.getMessage());
+        }
+    }
+
+    private static void ensureTrialUsers(Connection conn) throws SQLException {
+        ensureTrialUser(conn, "admintoko", "toko123", "Admin Toko", "ADMIN_TOKO");
+        ensureTrialUser(conn, "adminkeuangan", "keuangan123", "Admin Keuangan", "ADMIN_KEUANGAN");
+        ensureTrialUser(conn, "kasir", "kasir123", "Kasir Toko", "KASIR");
+        deactivateLegacyTrialUsers(conn);
+    }
+
+    private static void ensureTrialUser(Connection conn, String username, String password, String fullName, String role)
+            throws SQLException {
+        String hash = com.baletpos.util.PasswordUtil.hashPassword(password);
+        try (PreparedStatement check = conn.prepareStatement("SELECT count(*) FROM users WHERE username = ?")) {
+            check.setString(1, username);
+            try (ResultSet rs = check.executeQuery()) {
+                boolean exists = rs.next() && rs.getInt(1) > 0;
+                if (exists) {
+                    try (PreparedStatement update = conn.prepareStatement(
+                            "UPDATE users SET password_hash = ?, full_name = ?, role = ?, is_active = 1 WHERE username = ?")) {
+                        update.setString(1, hash);
+                        update.setString(2, fullName);
+                        update.setString(3, role);
+                        update.setString(4, username);
+                        update.executeUpdate();
+                    }
+                } else {
+                    try (PreparedStatement insert = conn.prepareStatement(
+                            "INSERT INTO users (username, password_hash, full_name, role, is_active) VALUES (?, ?, ?, ?, 1)")) {
+                        insert.setString(1, username);
+                        insert.setString(2, hash);
+                        insert.setString(3, fullName);
+                        insert.setString(4, role);
+                        insert.executeUpdate();
+                    }
+                }
+            }
+        }
+        logger.info("Trial user ensured: {} ({})", username, role);
+    }
+
+    private static void deactivateLegacyTrialUsers(Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE users SET is_active = 0 WHERE username IN (?, ?, ?)")) {
+            stmt.setString(1, "admin");
+            stmt.setString(2, "kasir2");
+            stmt.setString(3, "teknisi");
+            stmt.executeUpdate();
+        }
+        logger.info("Legacy trial users deactivated: admin, kasir2, teknisi");
+    }
+
     public static Connection getConnection() throws SQLException {
         if (DIALECT == DatabaseDialect.POSTGRES && DB_USER != null && !DB_USER.isBlank()) {
             return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD == null ? "" : DB_PASSWORD);
@@ -558,7 +688,12 @@ public class DatabaseConfig {
         if (envValue != null && !envValue.isBlank()) {
             return envValue;
         }
-        return null;
+        return LocalAppConfig.get(propertyName);
+    }
+
+    private static boolean isDemoDataEnabled() {
+        String configured = getConfigValue("baletpos.seed.demo", "BALETPOS_SEED_DEMO");
+        return configured != null && configured.equalsIgnoreCase("true");
     }
 
     private static void loadJdbcDriver() throws ClassNotFoundException {

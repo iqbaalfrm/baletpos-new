@@ -2,6 +2,8 @@ package com.baletpos;
 
 import atlantafx.base.theme.NordLight;
 import com.baletpos.config.DatabaseConfig;
+import com.baletpos.config.DatabaseDialect;
+import com.baletpos.service.BackupService;
 import com.baletpos.util.ImageUtil;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -53,10 +55,13 @@ public class App extends Application {
         // Initialize Database
         try {
             DatabaseConfig.initialize();
-            com.baletpos.util.MigrationRunner.runMigrations();
+            if (DatabaseConfig.getDialect() == DatabaseDialect.SQLITE) {
+                com.baletpos.util.MigrationRunner.runMigrations();
+            }
 
             // Copy dummy images if first run
             ImageUtil.copyDummyImages();
+            BackupService.start();
 
         } catch (Exception e) {
             logger.error("Critical Error: Database initialization failed", e);

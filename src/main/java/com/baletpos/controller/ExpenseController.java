@@ -75,6 +75,7 @@ public class ExpenseController {
     private List<ExpenseCode> allExpenseCodes;
     private List<Expense> allExpenses = new ArrayList<>();
     private PaginationControl pagination;
+    private boolean canManageExpenses;
 
     @FXML
     public void initialize() {
@@ -96,7 +97,7 @@ public class ExpenseController {
 
         // Selection listener
         expenseTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            deleteButton.setDisable(newVal == null);
+            deleteButton.setDisable(newVal == null || !canManageExpenses);
         });
     }
 
@@ -134,10 +135,9 @@ public class ExpenseController {
     }
 
     private void setupPermissions() {
-        User currentUser = Session.getInstance().getCurrentUser();
-        boolean isAdmin = currentUser != null && currentUser.getRole() == User.Role.ADMIN;
+        canManageExpenses = Session.getInstance().canManageFinance();
 
-        addButton.setDisable(!isAdmin);
+        addButton.setDisable(!canManageExpenses);
         deleteButton.setDisable(true);
     }
 
@@ -196,6 +196,10 @@ public class ExpenseController {
 
     @FXML
     private void handleAdd() {
+        if (!canManageExpenses) {
+            showError("Hanya Admin Keuangan yang dapat menambah biaya.");
+            return;
+        }
         javafx.stage.Stage modal = new javafx.stage.Stage();
         com.baletpos.util.ModalUtil.applyModalDefaults(modal);
         modal.initStyle(javafx.stage.StageStyle.TRANSPARENT);
@@ -348,6 +352,10 @@ public class ExpenseController {
 
     @FXML
     private void handleDelete() {
+        if (!canManageExpenses) {
+            showError("Hanya Admin Keuangan yang dapat menghapus biaya.");
+            return;
+        }
         Expense selected = expenseTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             boolean confirm = com.baletpos.util.ModalUtil.showConfirmDanger(
@@ -373,6 +381,10 @@ public class ExpenseController {
 
     @FXML
     private void handleManageCodes() {
+        if (!canManageExpenses) {
+            showError("Hanya Admin Keuangan yang dapat mengelola kode biaya.");
+            return;
+        }
         // Show dialog to manage expense codes
         showExpenseCodesDialog();
     }

@@ -32,7 +32,43 @@ public class Session {
     }
     
     public boolean isAdmin() {
-        return isLoggedIn() && currentUser.getRole() == User.Role.ADMIN;
+        return canManageStore() || canManageFinance();
+    }
+
+    public boolean isKasir() {
+        return hasRole(User.Role.KASIR);
+    }
+
+    public boolean isAdminToko() {
+        return hasRole(User.Role.ADMIN_TOKO);
+    }
+
+    public boolean isAdminKeuangan() {
+        return hasRole(User.Role.ADMIN_KEUANGAN);
+    }
+
+    public boolean canManageStore() {
+        return hasRole(User.Role.ADMIN_TOKO);
+    }
+
+    public boolean canManageFinance() {
+        return hasRole(User.Role.ADMIN_KEUANGAN);
+    }
+
+    public boolean canViewReports() {
+        return hasRole(User.Role.ADMIN_TOKO, User.Role.ADMIN_KEUANGAN, User.Role.KASIR);
+    }
+
+    public boolean hasRole(User.Role... roles) {
+        if (!isLoggedIn()) {
+            return false;
+        }
+        for (User.Role role : roles) {
+            if (currentUser.getRole() == role) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

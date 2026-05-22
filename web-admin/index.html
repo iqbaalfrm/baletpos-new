@@ -58,7 +58,7 @@
 
       <div class="sidebar-footer">
         <p>Role aktif</p>
-        <strong>Admin Keuangan</strong>
+        <strong id="active-user-label">Admin Keuangan</strong>
         <button id="logout-btn" class="logout-btn" type="button">Keluar</button>
       </div>
     </aside>
@@ -87,23 +87,23 @@
       <section class="summary-grid" aria-label="Ringkasan keuangan">
         <article class="metric-card">
           <p>Omzet Bersih</p>
-          <strong id="net-revenue">Rp 126.450.000</strong>
-          <span class="good">+8,4% dari periode lalu</span>
+          <strong id="net-revenue">Rp 0</strong>
+          <span class="good">Data dari Supabase</span>
         </article>
         <article class="metric-card">
           <p>Gross Profit</p>
-          <strong id="gross-profit">Rp 31.780.000</strong>
-          <span class="good">Margin 25,1%</span>
+          <strong id="gross-profit">Rp 0</strong>
+          <span class="good">Data dari Supabase</span>
         </article>
         <article class="metric-card">
           <p>Biaya Operasional</p>
-          <strong id="expense-total">Rp 12.380.000</strong>
-          <span class="warn">72% dari budget</span>
+          <strong id="expense-total">Rp 0</strong>
+          <span class="warn">Data dari Supabase</span>
         </article>
         <article class="metric-card">
           <p>Laba Bersih</p>
-          <strong id="net-profit">Rp 19.400.000</strong>
-          <span class="good">Margin 15,3%</span>
+          <strong id="net-profit">Rp 0</strong>
+          <span class="good">Data dari Supabase</span>
         </article>
       </section>
 
@@ -526,11 +526,11 @@
             <form class="reconcile-form" id="reconcile-form">
               <label>
                 Kas sistem
-                <input name="systemCash" type="number" value="18450000">
+                <input name="systemCash" type="number" value="0">
               </label>
               <label>
                 Kas aktual
-                <input name="actualCash" type="number" value="18400000">
+                <input name="actualCash" type="number" value="0">
               </label>
               <label>
                 Catatan
@@ -541,8 +541,8 @@
           </article>
           <article class="panel result-panel">
             <p>Selisih Kas</p>
-            <strong id="cash-diff">Rp -50.000</strong>
-            <span>Perlu review transaksi tunai shift sore.</span>
+            <strong id="cash-diff">Rp 0</strong>
+            <span>Masukkan kas sistem dan kas aktual untuk menghitung selisih.</span>
           </article>
         </div>
       </section>

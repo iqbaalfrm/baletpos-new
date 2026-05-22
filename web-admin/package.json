@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "vercel dev",
+    "start": "node local-server.js",
+    "vercel:dev": "vercel dev --yes",
     "check": "node --check app.js",
     "migrate:sqlite": "node scripts/migrate-sqlite-to-supabase.js"
   },

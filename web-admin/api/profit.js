@@ -1,6 +1,7 @@
-const { query, sendJson, handleError, getDateRange } = require("./_db");
+const { query, sendJson, handleError, getDateRange, requireFinance } = require("./_db");
 
 module.exports = async function handler(req, res) {
+  if (!requireFinance(req, res)) return;
   try {
     const period = new URL(req.url, "http://localhost").searchParams.get("period") || "month";
     const { start, end } = getDateRange(period);

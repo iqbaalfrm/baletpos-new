@@ -13,7 +13,19 @@ public class User {
     private LocalDateTime updatedAt;
 
     public enum Role {
-        ADMIN, KASIR
+        KASIR("Kasir"),
+        ADMIN_TOKO("Admin Toko"),
+        ADMIN_KEUANGAN("Admin Keuangan");
+
+        private final String displayName;
+
+        Role(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
     public User() {}

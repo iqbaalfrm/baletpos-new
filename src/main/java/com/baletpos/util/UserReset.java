@@ -22,7 +22,7 @@ public class UserReset {
 
             try (Connection conn = DatabaseConfig.getConnection()) {
                 // Try update first
-                String updateSql = "UPDATE users SET password_hash = ?, is_active = 1 WHERE username = ?";
+                String updateSql = "UPDATE users SET password_hash = ?, role = 'ADMIN_TOKO', is_active = 1 WHERE username = ?";
                 try (PreparedStatement adminStmt = conn.prepareStatement(updateSql)) {
                     adminStmt.setString(1, hash);
                     adminStmt.setString(2, username);
@@ -33,7 +33,7 @@ public class UserReset {
                     } else {
                         // Insert if not exists
                         System.out.println("User not found, inserting new admin...");
-                        String insertSql = "INSERT INTO users (username, password_hash, full_name, role, is_active) VALUES (?, ?, 'Administrator', 'ADMIN', 1)";
+                        String insertSql = "INSERT INTO users (username, password_hash, full_name, role, is_active) VALUES (?, ?, 'Administrator', 'ADMIN_TOKO', 1)";
                         try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                             insertStmt.setString(1, username);
                             insertStmt.setString(2, hash);

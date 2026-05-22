@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
 import java.util.Optional;
 
 public class SecurityUtil {
@@ -21,7 +22,7 @@ public class SecurityUtil {
         VBox content = new VBox(10);
         content.setStyle("-fx-padding: 20;");
 
-        Label label = new Label("Masukkan Password ADMIN:");
+        Label label = new Label("Masukkan Password Admin:");
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("********");
 
@@ -49,18 +50,18 @@ public class SecurityUtil {
         if (inputPassword == null || inputPassword.isBlank())
             return false;
 
-        // 1. Cek user saat ini jika ADMIN
+        // 1. Cek user saat ini jika punya hak admin toko/keuangan
         User currentUser = Session.getInstance().getCurrentUser();
-        if (currentUser != null && currentUser.getRole() == User.Role.ADMIN) {
+        if (currentUser != null && Session.getInstance().isAdmin()) {
             if (PasswordUtil.checkPassword(inputPassword, currentUser.getPasswordHash())) {
                 return true;
             }
         }
 
-        // 2. Jika user saat ini bukan admin (misal Kasir minta override),
-        // cek ke user 'admin' default di database
+        // 2. Jika user saat ini bukan admin, cek akun admin aktif pertama di database.
         UserDAO userDAO = new UserDAO();
-        Optional<User> admin = userDAO.findByUsername("admin");
+        Optional<User> admin = userDAO.findFirstActiveByRoles(
+                List.of(User.Role.ADMIN_TOKO, User.Role.ADMIN_KEUANGAN));
         if (admin.isPresent()) {
             if (PasswordUtil.checkPassword(inputPassword, admin.get().getPasswordHash())) {
                 return true;

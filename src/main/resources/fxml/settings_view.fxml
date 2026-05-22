@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.baletpos.controller.SettingsController"
+            style="-fx-background-color: #f8fafc; -fx-padding: 0;">
+    <VBox spacing="14" style="-fx-background-color: #f8fafc; -fx-padding: 14;">
+        <VBox spacing="4">
+            <Label text="Setting Sistem" style="-fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #0f172a;"/>
+            <Label text="Konfigurasi Supabase dan backup otomatis Google Drive" style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+        </VBox>
+
+        <VBox spacing="14" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-color: #e2e8f0; -fx-padding: 18;">
+            <Label text="Database Supabase" style="-fx-font-size: 16px; -fx-font-weight: 700; -fx-text-fill: #0f172a;"/>
+
+            <VBox spacing="8">
+                <Label text="JDBC URL" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                <TextField fx:id="dbUrlField" promptText="jdbc:postgresql://HOST:PORT/postgres?sslmode=require"/>
+            </VBox>
+
+            <HBox spacing="12">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="User" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                    <TextField fx:id="dbUserField" promptText="postgres.PROJECT_REF"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Password" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                    <PasswordField fx:id="dbPasswordField" promptText="Password database"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Test Koneksi" onAction="#handleTestSupabase"
+                        style="-fx-background-color: white; -fx-text-fill: #1E40AF; -fx-border-color: #1E40AF; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 16; -fx-font-weight: 600;"/>
+                <Label text="Perubahan database aktif setelah aplikasi direstart." style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="14" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-color: #e2e8f0; -fx-padding: 18;">
+            <Label text="Backup Harian" style="-fx-font-size: 16px; -fx-font-weight: 700; -fx-text-fill: #0f172a;"/>
+
+            <CheckBox fx:id="backupEnabledCheck" text="Aktifkan backup otomatis"/>
+
+            <HBox spacing="12">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Folder Backup Lokal" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                    <TextField fx:id="backupDirField" promptText="Kosongkan untuk default ~/.baletpos/backups"/>
+                </VBox>
+                <VBox spacing="8" prefWidth="140">
+                    <Label text="Jam Backup" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                    <TextField fx:id="backupTimeField" promptText="23:00"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12" alignment="BOTTOM_LEFT">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Google Service Account JSON" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                    <TextField fx:id="driveServiceAccountPathField" promptText="C:\path\service-account.json"/>
+                </VBox>
+                <Button text="Pilih File" onAction="#handleBrowseServiceAccount"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-background-radius: 8; -fx-padding: 10 16; -fx-font-weight: 600;"/>
+            </HBox>
+
+            <VBox spacing="8">
+                <Label text="Google Drive Folder ID" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #475569;"/>
+                <TextField fx:id="driveFolderIdField" promptText="Folder ID dari URL Google Drive"/>
+            </VBox>
+        </VBox>
+
+        <HBox spacing="12" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-radius: 14; -fx-border-color: #e2e8f0; -fx-padding: 16;">
+            <Button fx:id="saveButton" text="Simpan Setting" onAction="#handleSave"
+                    style="-fx-background-color: #1E40AF; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 12 22; -fx-font-weight: 700;"/>
+            <VBox spacing="2">
+                <Label text="File setting lokal" style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #64748b;"/>
+                <Label fx:id="configPathLabel" text="-" style="-fx-font-size: 12px; -fx-text-fill: #94a3b8;"/>
+            </VBox>
+        </HBox>
+    </VBox>
+</ScrollPane>

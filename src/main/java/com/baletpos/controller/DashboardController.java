@@ -34,6 +34,8 @@ public class DashboardController {
     private Button profitLossButton;
     @FXML
     private Button returnButton;
+    @FXML
+    private Button settingsButton;
 
     // Dashboard summary labels
     @FXML
@@ -66,12 +68,11 @@ public class DashboardController {
         if (Session.getInstance().isLoggedIn()) {
             User currentUser = Session.getInstance().getCurrentUser();
             String fullName = currentUser.getFullName();
-            String role = currentUser.getRole().toString();
 
             if (welcomeLabel != null)
                 welcomeLabel.setText("BaletPOS");
             if (roleLabel != null)
-                roleLabel.setText(role);
+                roleLabel.setText(currentUser.getRole().getDisplayName());
 
             setupRoleBasedAccess();
 
@@ -84,15 +85,16 @@ public class DashboardController {
     }
 
     private void setupRoleBasedAccess() {
-        User currentUser = Session.getInstance().getCurrentUser();
-        boolean isAdmin = currentUser != null && currentUser.getRole() == User.Role.ADMIN;
+        Session session = Session.getInstance();
+        boolean canManageStore = session.canManageStore();
+        boolean canManageFinance = session.canManageFinance();
 
-        // Hide/disable admin-only features for KASIR
-        setButtonVisible(purchaseButton, isAdmin);
-        setButtonVisible(supplierButton, isAdmin);
-        setButtonVisible(expenseButton, isAdmin);
-        setButtonVisible(profitLossButton, isAdmin);
-        setButtonVisible(returnButton, isAdmin);
+        setButtonVisible(purchaseButton, canManageStore);
+        setButtonVisible(supplierButton, canManageStore);
+        setButtonVisible(returnButton, canManageStore);
+        setButtonVisible(expenseButton, canManageFinance);
+        setButtonVisible(profitLossButton, canManageFinance);
+        setButtonVisible(settingsButton, canManageStore || canManageFinance);
     }
 
     private void setButtonVisible(Button btn, boolean visible) {
@@ -136,26 +138,28 @@ public class DashboardController {
 
     @FXML
     private void showPurchase() {
-        if (checkAdminAccess()) {
+        if (checkStoreAccess()) {
             loadView("purchase_view");
         }
     }
 
     @FXML
     private void showSuppliers() {
-        loadView("supplier_list");
+        if (checkStoreAccess()) {
+            loadView("supplier_list");
+        }
     }
 
     @FXML
     private void showExpenses() {
-        if (checkAdminAccess()) {
+        if (checkFinanceAccess()) {
             loadView("expense_view");
         }
     }
 
     @FXML
     private void showReturns() {
-        if (checkAdminAccess()) {
+        if (checkStoreAccess()) {
             loadView("return_mutation");
         }
     }
@@ -182,14 +186,14 @@ public class DashboardController {
 
     @FXML
     private void showProfitLossReport() {
-        if (checkAdminAccess()) {
+        if (checkFinanceAccess()) {
             loadView("profit_loss_report");
         }
     }
 
     @FXML
     private void showExpenseReport() {
-        if (checkAdminAccess()) {
+        if (checkFinanceAccess()) {
             loadView("expense_view");
         }
     }
@@ -199,10 +203,26 @@ public class DashboardController {
         loadView("dashboard_content");
     }
 
-    private boolean checkAdminAccess() {
-        User currentUser = Session.getInstance().getCurrentUser();
-        if (currentUser == null || currentUser.getRole() != User.Role.ADMIN) {
-            showError("Akses ditolak. Fitur ini hanya untuk ADMIN.");
+    @FXML
+    private void showSettings() {
+        if (!Session.getInstance().isAdmin()) {
+            showError("Akses ditolak. Setting hanya untuk Admin Toko atau Admin Keuangan.");
+            return;
+        }
+        loadView("settings_view");
+    }
+
+    private boolean checkStoreAccess() {
+        if (!Session.getInstance().canManageStore()) {
+            showError("Akses ditolak. Fitur ini hanya untuk Admin Toko.");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkFinanceAccess() {
+        if (!Session.getInstance().canManageFinance()) {
+            showError("Akses ditolak. Fitur ini hanya untuk Admin Keuangan.");
             return false;
         }
         return true;

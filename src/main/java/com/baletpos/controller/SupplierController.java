@@ -56,6 +56,7 @@ public class SupplierController {
     private final ObservableList<Supplier> suppliers = FXCollections.observableArrayList();
     private PaginationControl pagination;
     private String currentSearchQuery = "";
+    private boolean canManageSuppliers;
 
     @FXML
     public void initialize() {
@@ -66,8 +67,8 @@ public class SupplierController {
 
         // Selection listener
         supplierTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            editButton.setDisable(newVal == null);
-            deleteButton.setDisable(newVal == null);
+            editButton.setDisable(newVal == null || !canManageSuppliers);
+            deleteButton.setDisable(newVal == null || !canManageSuppliers);
         });
 
         // Search listener
@@ -85,12 +86,11 @@ public class SupplierController {
     }
 
     private void setupPermissions() {
-        User currentUser = Session.getInstance().getCurrentUser();
-        boolean isAdmin = currentUser != null && currentUser.getRole() == User.Role.ADMIN;
+        canManageSuppliers = Session.getInstance().canManageStore();
 
-        addButton.setDisable(!isAdmin);
+        addButton.setDisable(!canManageSuppliers);
         editButton.setDisable(true);
-        deleteButton.setDisable(!isAdmin);
+        deleteButton.setDisable(!canManageSuppliers);
     }
 
     private void loadSuppliers() {
@@ -119,11 +119,19 @@ public class SupplierController {
 
     @FXML
     private void handleAdd() {
+        if (!canManageSuppliers) {
+            showError("Hanya Admin Toko yang dapat menambah supplier.");
+            return;
+        }
         showSupplierDialog(null);
     }
 
     @FXML
     private void handleEdit() {
+        if (!canManageSuppliers) {
+            showError("Hanya Admin Toko yang dapat mengubah supplier.");
+            return;
+        }
         Supplier selected = supplierTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             showSupplierDialog(selected);
@@ -132,6 +140,10 @@ public class SupplierController {
 
     @FXML
     private void handleDelete() {
+        if (!canManageSuppliers) {
+            showError("Hanya Admin Toko yang dapat menghapus supplier.");
+            return;
+        }
         Supplier selected = supplierTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             boolean confirm = com.baletpos.util.ModalUtil.showConfirmDanger(

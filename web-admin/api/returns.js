@@ -1,6 +1,7 @@
-const { query, sendJson, handleError } = require("./_db");
+const { query, sendJson, handleError, requireFinance } = require("./_db");
 
 module.exports = async function handler(req, res) {
+  if (!requireFinance(req, res)) return;
   try {
     const [returns, movements] = await Promise.all([
       query(

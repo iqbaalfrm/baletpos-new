@@ -561,8 +561,8 @@ public class ReturnMutationController {
             return;
 
         User user = Session.getInstance().getCurrentUser();
-        if (user == null || user.getRole() != User.Role.ADMIN) {
-            ModalUtil.showError("Akses Ditolak", "Hanya Admin yang bisa melakukan retur.");
+        if (user == null || !Session.getInstance().canManageStore()) {
+            ModalUtil.showError("Akses Ditolak", "Hanya Admin Toko yang bisa melakukan retur.");
             return;
         }
 
@@ -657,8 +657,8 @@ public class ReturnMutationController {
 
         try {
             User user = Session.getInstance().getCurrentUser();
-            if (user == null || user.getRole() != User.Role.ADMIN) {
-                ModalUtil.showError("Akses Ditolak", "Hanya Admin yang bisa melakukan mutasi.");
+            if (user == null || !Session.getInstance().canManageStore()) {
+                ModalUtil.showError("Akses Ditolak", "Hanya Admin Toko yang bisa melakukan mutasi.");
                 return;
             }
             int delta = Integer.parseInt(txtAdjQty.getText());

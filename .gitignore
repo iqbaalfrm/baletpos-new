@@ -1,0 +1,16 @@
+.gradle/
+build/
+bin/
+*.log
+*.tmp
+*.class
+
+.env
+web-admin/.env
+web-admin/node_modules/
+supabase/.temp/
+
+desktop-*-check.out.log
+desktop-*-check.err.log
+vercel-dev-*.out.log
+vercel-dev-*.err.log

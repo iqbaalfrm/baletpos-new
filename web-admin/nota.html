@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cetak Nota - BaletPOS</title>
+  <style>
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      color: #000;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Kertas Full Halaman (11 inch continuous form - Lebar 9.5 inch) */
+    .receipt-container {
+      background: #fff;
+      width: 9.5in; /* Kertas ukuran 9.5 inci */
+      min-height: 11in; /* 11 inch full page */
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    /* Typography */
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .bold { font-weight: bold; }
+    .mb-1 { margin-bottom: 5px; }
+    .mb-2 { margin-bottom: 15px; }
+    .mb-4 { margin-bottom: 30px; }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    .header p {
+      font-size: 14px;
+    }
+
+    .divider {
+      border-top: 1px dashed #000;
+      margin: 10px 0;
+    }
+
+    /* Info Section */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 15px 0;
+    }
+    th {
+      border-top: 1px dashed #000;
+      border-bottom: 1px dashed #000;
+      padding: 8px 4px;
+      text-align: left;
+    }
+    td {
+      padding: 8px 4px;
+      vertical-align: top;
+    }
+
+    /* Summary */
+    .summary-box {
+      width: 60%;
+      margin-left: auto;
+      font-size: 14px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .summary-row.total {
+      font-size: 16px;
+      font-weight: bold;
+      border-top: 1px dashed #000;
+      padding-top: 5px;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      font-size: 12px;
+    }
+
+    /* Print Specific Rules */
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .receipt-container {
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+        box-shadow: none;
+      }
+      @page {
+        size: 9.5in 11in; /* Kertas ukuran presisi 9.5" x 11" */
+        margin: 0.5in;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="receipt-container">
+    <div class="header text-center mb-2">
+      <h1>BALET COMPUTER</h1>
+      <p>Jalan Prof. Moh. Yamin No 57</p>
+      <p>Kudaile Slawi Kab. Tegal</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="info-grid mb-2">
+      <div>
+        <div class="mb-1"><strong>No Nota:</strong> <span id="lbl-invoice">-</span></div>
+        <div><strong>Tanggal:</strong> <span id="lbl-date">-</span></div>
+      </div>
+      <div>
+        <div class="mb-1"><strong>Kasir:</strong> <span id="lbl-cashier">System</span></div>
+        <div><strong>Pelanggan:</strong> Umum</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th width="5%">No</th>
+          <th width="35%">Nama Barang</th>
+          <th width="15%" class="text-right">Harga</th>
+          <th width="10%" class="text-right">Qty</th>
+          <th width="15%" class="text-right">Diskon</th>
+          <th width="20%" class="text-right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="item-list">
+        <!-- JS akan populate item disini -->
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+
+    <div class="summary-box mb-4">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="lbl-subtotal">Rp 0</span>
+      </div>
+      <div class="summary-row">
+        <span>Diskon</span>
+        <span id="lbl-discount">Rp 0</span>
+      </div>
+      <div class="summary-row total">
+        <span>TOTAL BAYAR</span>
+        <span id="lbl-total">Rp 0</span>
+      </div>
+      <br>
+      <div class="summary-row">
+        <span>Metode Bayar</span>
+        <span id="lbl-method">-</span>
+      </div>
+      <div class="summary-row">
+        <span>Kembali</span>
+        <span id="lbl-change">Rp 0</span>
+      </div>
+    </div>
+
+    <div class="footer text-center">
+      <p>Barang yang sudah dibeli</p>
+      <p>tidak dapat dikembalikan / ditukar</p>
+      <br>
+      <p>*** TERIMA KASIH ATAS KUNJUNGAN ANDA ***</p>
+    </div>
+  </div>
+
+  <script>
+    const currency = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    });
+
+    // Simulasi data untuk preview (Jika API tidak tersedia)
+    const dummySale = {
+      invoice: "INV-20260521-0008",
+      date: new Date().toLocaleString('id-ID'),
+      cashier: "Rina",
+      subtotal: 12500000,
+      discount: 0,
+      total: 12500000,
+      method: "QRIS",
+      change: 0,
+      items: [
+        { name: "ASUS ZenBook UX430UA", price: 8500000, qty: 1, discount: 0, subtotal: 8500000 },
+        { name: "Samsung 990 Pro 2TB", price: 4000000, qty: 1, discount: 0, subtotal: 4000000 }
+      ]
+    };
+
+    function loadReceipt() {
+      // Ambil ID Invoice dari URL (nota.html?inv=INV-xxx)
+      const urlParams = new URLSearchParams(window.location.search);
+      const invParam = urlParams.get('inv');
+
+      // Pada implementasi asli, lakukan fetch ke API Supabase/Vercel berdasarkan invoice
+      // fetch(`/api/sales/${invParam}`).then(...)
+
+      const data = dummySale; // Ganti dengan data asli jika tersambung DB
+      if(invParam) data.invoice = invParam;
+
+      document.getElementById('lbl-invoice').textContent = data.invoice;
+      document.getElementById('lbl-date').textContent = data.date;
+      document.getElementById('lbl-cashier').textContent = data.cashier;
+
+      document.getElementById('lbl-subtotal').textContent = currency.format(data.subtotal);
+      document.getElementById('lbl-discount').textContent = currency.format(data.discount);
+      document.getElementById('lbl-total').textContent = currency.format(data.total);
+      document.getElementById('lbl-method').textContent = data.method;
+      document.getElementById('lbl-change').textContent = currency.format(data.change);
+
+      const tbody = document.getElementById('item-list');
+      data.items.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.name}</td>
+          <td class="text-right">${currency.format(item.price)}</td>
+          <td class="text-right">${item.qty}</td>
+          <td class="text-right">${currency.format(item.discount)}</td>
+          <td class="text-right">${currency.format(item.subtotal)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Otomatis buka dialog print setelah render
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
+
+    window.onload = loadReceipt;
+  </script>
+</body>
+</html>
