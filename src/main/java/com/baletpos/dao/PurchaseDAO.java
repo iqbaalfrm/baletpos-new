@@ -1,6 +1,7 @@
 package com.baletpos.dao;
 
 import com.baletpos.config.DatabaseConfig;
+import com.baletpos.config.DatabaseDialect;
 import com.baletpos.config.SqlDialect;
 import com.baletpos.model.*;
 import org.slf4j.Logger;
@@ -271,7 +272,11 @@ public class PurchaseDAO {
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, purchase.getPurchaseNumber());
             pstmt.setLong(2, purchase.getSupplierId());
-            pstmt.setString(3, purchase.getPurchaseDate().toString());
+            if (DatabaseConfig.getDialect() == DatabaseDialect.POSTGRES) {
+                pstmt.setTimestamp(3, java.sql.Timestamp.valueOf(purchase.getPurchaseDate()));
+            } else {
+                pstmt.setString(3, purchase.getPurchaseDate().toString());
+            }
             pstmt.setInt(4, purchase.getTotalAmount().intValue());
             pstmt.setString(5, purchase.getNotes());
             pstmt.setString(6, Purchase.Status.COMPLETED.name());

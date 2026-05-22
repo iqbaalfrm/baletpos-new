@@ -1,6 +1,7 @@
 package com.baletpos.dao;
 
 import com.baletpos.config.DatabaseConfig;
+import com.baletpos.config.DatabaseDialect;
 import com.baletpos.config.SqlDialect;
 import com.baletpos.model.Expense;
 import org.slf4j.Logger;
@@ -34,13 +35,16 @@ public class ExpenseDAO {
             expense.setExpenseNumber(expenseNumber);
 
             String sql = "INSERT INTO expenses (expense_number, expense_code_id, expense_date, amount, description, created_by) "
-                    +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+                    + "VALUES (?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, expense.getExpenseNumber());
                 pstmt.setLong(2, expense.getExpenseCodeId());
-                pstmt.setString(3, expense.getExpenseDate().toString());
+                if (DatabaseConfig.getDialect() == DatabaseDialect.POSTGRES) {
+                    pstmt.setDate(3, java.sql.Date.valueOf(expense.getExpenseDate()));
+                } else {
+                    pstmt.setString(3, expense.getExpenseDate().toString());
+                }
                 pstmt.setInt(4, expense.getAmount().intValue());
                 pstmt.setString(5, expense.getDescription());
                 pstmt.setLong(6, expense.getCreatedBy());
@@ -83,11 +87,10 @@ public class ExpenseDAO {
     public List<Expense> findAll() {
         List<Expense> expenses = new ArrayList<>();
         String sql = "SELECT e.*, ec.code as expense_code, ec.name as expense_code_name, u.full_name as created_by_name "
-                +
-                "FROM expenses e " +
-                "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id " +
-                "LEFT JOIN users u ON e.created_by = u.id " +
-                "ORDER BY e.expense_date DESC, e.id DESC";
+                + "FROM expenses e "
+                + "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id "
+                + "LEFT JOIN users u ON e.created_by = u.id "
+                + "ORDER BY e.expense_date DESC, e.id DESC";
 
         try (Connection conn = DatabaseConfig.getConnection();
                 Statement stmt = conn.createStatement();
@@ -105,12 +108,11 @@ public class ExpenseDAO {
     public List<Expense> findByDateRange(LocalDate startDate, LocalDate endDate) {
         List<Expense> expenses = new ArrayList<>();
         String sql = "SELECT e.*, ec.code as expense_code, ec.name as expense_code_name, u.full_name as created_by_name "
-                +
-                "FROM expenses e " +
-                "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id " +
-                "LEFT JOIN users u ON e.created_by = u.id " +
-                "WHERE e.expense_date BETWEEN ? AND ? " +
-                "ORDER BY e.expense_date DESC, e.id DESC";
+                + "FROM expenses e "
+                + "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id "
+                + "LEFT JOIN users u ON e.created_by = u.id "
+                + "WHERE e.expense_date BETWEEN ? AND ? "
+                + "ORDER BY e.expense_date DESC, e.id DESC";
 
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -132,12 +134,11 @@ public class ExpenseDAO {
     public List<Expense> findByDateRangeAndCode(LocalDate startDate, LocalDate endDate, Long expenseCodeId) {
         List<Expense> expenses = new ArrayList<>();
         String sql = "SELECT e.*, ec.code as expense_code, ec.name as expense_code_name, u.full_name as created_by_name "
-                +
-                "FROM expenses e " +
-                "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id " +
-                "LEFT JOIN users u ON e.created_by = u.id " +
-                "WHERE e.expense_date BETWEEN ? AND ? AND e.expense_code_id = ? " +
-                "ORDER BY e.expense_date DESC, e.id DESC";
+                + "FROM expenses e "
+                + "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id "
+                + "LEFT JOIN users u ON e.created_by = u.id "
+                + "WHERE e.expense_date BETWEEN ? AND ? AND e.expense_code_id = ? "
+                + "ORDER BY e.expense_date DESC, e.id DESC";
 
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -179,11 +180,10 @@ public class ExpenseDAO {
 
     public Optional<Expense> findById(Long id) {
         String sql = "SELECT e.*, ec.code as expense_code, ec.name as expense_code_name, u.full_name as created_by_name "
-                +
-                "FROM expenses e " +
-                "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id " +
-                "LEFT JOIN users u ON e.created_by = u.id " +
-                "WHERE e.id = ?";
+                + "FROM expenses e "
+                + "LEFT JOIN expense_codes ec ON e.expense_code_id = ec.id "
+                + "LEFT JOIN users u ON e.created_by = u.id "
+                + "WHERE e.id = ?";
 
         try (Connection conn = DatabaseConfig.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -207,7 +207,11 @@ public class ExpenseDAO {
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setLong(1, expense.getExpenseCodeId());
-            pstmt.setString(2, expense.getExpenseDate().toString());
+            if (DatabaseConfig.getDialect() == DatabaseDialect.POSTGRES) {
+                pstmt.setDate(2, java.sql.Date.valueOf(expense.getExpenseDate()));
+            } else {
+                pstmt.setString(2, expense.getExpenseDate().toString());
+            }
             pstmt.setInt(3, expense.getAmount().intValue());
             pstmt.setString(4, expense.getDescription());
             pstmt.setLong(5, expense.getId());
@@ -278,7 +282,8 @@ public class ExpenseDAO {
         String dateStr = rs.getString("expense_date");
         if (dateStr != null && !dateStr.isBlank()) {
             try {
-                e.setExpenseDate(LocalDate.parse(dateStr.substring(0, 10)));
+                String cleanDate = dateStr.length() > 10 ? dateStr.substring(0, 10) : dateStr;
+                e.setExpenseDate(LocalDate.parse(cleanDate));
             } catch (Exception ex) {
                 logger.warn("Failed to parse expense_date: {}", dateStr);
             }
@@ -301,5 +306,3 @@ public class ExpenseDAO {
         return e;
     }
 }
-
-

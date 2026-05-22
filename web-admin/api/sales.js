@@ -7,6 +7,7 @@ module.exports = async function handler(req, res) {
     const { start, end } = getDateRange(period);
     const rows = await query(
       `SELECT s.invoice_number AS invoice,
+              s.sale_date AS time,
               COALESCE(u.full_name, '-') AS cashier,
               s.payment_method AS method,
               s.total_amount::bigint AS total,

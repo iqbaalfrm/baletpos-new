@@ -507,7 +507,11 @@ public class SaleDAO {
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, sale.getInvoiceNumber());
             pstmt.setObject(2, sale.getCustomerId());
-            pstmt.setString(3, sale.getSaleDate().format(DB_DATE_FMT));
+            if (DatabaseConfig.getDialect() == DatabaseDialect.POSTGRES) {
+                pstmt.setTimestamp(3, java.sql.Timestamp.valueOf(sale.getSaleDate()));
+            } else {
+                pstmt.setString(3, sale.getSaleDate().format(DB_DATE_FMT));
+            }
             pstmt.setInt(4, sale.getSubtotal().intValue());
             pstmt.setDouble(5, sale.getDiscountPercent());
             pstmt.setInt(6, sale.getDiscountAmount().intValue());
