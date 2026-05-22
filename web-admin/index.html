@@ -75,9 +75,10 @@
             <input id="global-search" type="search" placeholder="Invoice, biaya, metode bayar">
           </label>
           <select id="period-select" aria-label="Periode laporan">
+            <option value="all" selected>Semua data</option>
             <option value="today">Hari ini</option>
             <option value="week">Minggu ini</option>
-            <option value="month" selected>Bulan ini</option>
+            <option value="month">Bulan ini</option>
           </select>
           <button id="export-btn" class="primary-btn" type="button">Export CSV</button>
           <span class="connection-status" id="connection-status">DB belum dicek</span>
